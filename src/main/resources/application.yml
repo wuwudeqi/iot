@@ -1,0 +1,70 @@
+server:
+  port: 80
+  servlet:
+    context-path: /
+
+socket:
+  port: 10101
+  address: 127.0.0.1
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/ekoplat?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+  freemarker:
+    check-template-location: false
+  jpa:
+    hibernate:
+      use-new-id-generator-mappings: false
+    show-sql: false
+    open-in-view: false
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        max-wait: 200
+        min-idle: 10
+    timeout: 1000
+  cache:
+    cache-names: c1
+
+mqtt:
+  server:
+    username: ekoplat_iot
+    password: mJjM8z5idK8FqYfz
+    address: tcp://127.0.0.1:1883
+    clie ntid: ekoplat_pub
+    default:
+      topic: ekoplat
+  client:
+    username: ekoplat_iot
+    password: mJjM8z5idK8FqYfz
+    address: tcp://127.0.0.1:1883
+    clientid: ekoplat_sub
+    connectionTimeoutTime: 0
+    keepAliveTime: 20
+    default:
+      topic: ekoplat
+
+param:
+    gateway:
+      typeName: "gateway"
+      typeNum: "0000"
+    lock:
+      typeName: "lock"
+      typeNum: "0101"
+
+#/usr/local/tomcat8/upload/
+#/Users/kiyoumi/Downloads/upload/
+filePath: "/Users/kiyoumi/Downloads/upload/"
+
+#/usr/local/tomcat8/excel/
+#/Users/kiyoumi/Downloads/excel/
+excelPath: "/Users/kiyoumi/Downloads/excel/"

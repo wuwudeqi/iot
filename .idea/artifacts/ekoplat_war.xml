@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="ekoplat:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>ekoplat</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="ekoplat-2.1.6.RELEASE.war">
+      <element id="artifact" artifact-name="ekoplat:war exploded" />
+    </root>
+  </artifact>
+</component>

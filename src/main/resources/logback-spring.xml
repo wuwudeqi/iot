@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+
+	<!-- 定义日志存储的路径，不要配置相对路径 -->
+	<property name="REMOTE_PATH" value="../logs" />
+	<property name="LOCAL_PATH" value="/Users/kiyoumi/Downloads/logs" />
+	<!-- 彩色日志 -->
+	<!-- 彩色日志依赖的渲染类 -->
+	<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+	<conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+	<conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+	<!-- 彩色日志格式 -->
+	<property name="CONSOLE_LOG_PATTERN" value="%red(%d{yyyy-MM-dd HH:mm:ss.SSS}) %highlight(%-5level) -- %green([%thread]) %boldMagenta(%logger) : %cyan(%msg%n)" />
+
+	<!-- 控制台输出 -->
+	<appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+		<!--日志级别过滤INFO以下-->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+			<pattern>
+				${CONSOLE_LOG_PATTERN}
+			</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		<encoder>
+			<pattern>
+				${CONSOLE_LOG_PATTERN}
+			</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!--路径-->
+			<fileNamePattern>${REMOTE_PATH}/iot/%d.log</fileNamePattern>
+		</rollingPolicy>
+	</appender>
+
+	<root level="debug">
+		<appender-ref ref="fileInfoLog" />
+		<appender-ref ref="consoleLog" />
+	</root>
+</configuration>
