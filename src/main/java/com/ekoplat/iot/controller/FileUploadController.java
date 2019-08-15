@@ -270,8 +270,7 @@ public class FileUploadController {
 
     // 文件下载相关代码
     @RequestMapping("updateSuccess/{typeName}")
-    @ResponseBody
-    public String updateSuccess(HttpServletResponse response, @PathVariable String typeName) throws Exception {
+    public void updateSuccess(HttpServletResponse response, @PathVariable String typeName) throws Exception {
         ValueOperations ops = redisTemplate.opsForValue();
         if (typeName.equals("gateway_update_success")) {
             Map<String, String> gateway_success_map = (Map<String, String>) ops.get("gateway_success_map");
@@ -291,48 +290,10 @@ public class FileUploadController {
 
         }
         String fileName = typeName + "_result.xlsx";
-        if (fileName != null) {
-            //设置文件路径
-            File file = new File(excelPath + fileName);
-            if (file.exists()) {
-                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                response.addHeader("Content-Disposition", "attachment;filename=" + fileName);
-                // filePath生成的excel文件存放路径
-                FileInputStream fis = new FileInputStream(excelPath + fileName);
-                byte[] buffer = new byte[1024];
-                BufferedInputStream bis = null;
-                try {
-                    bis = new BufferedInputStream(fis);
-                    OutputStream os = response.getOutputStream();
-                    int i = bis.read(buffer);
-                    while (i != -1) {
-                        os.write(buffer, 0, i);
-                        i = bis.read(buffer);
-                    }
-                    log.info("【文件下载】success");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (bis != null) {
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (fis != null) {
-                        try {
-                            fis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        } else {
-            return "设备还在更新请稍后";
+        File file = new File(excelPath + fileName);
+        if (file.exists()) {
+            downloadFile(response,typeName);
         }
-        return "请返回继续下载";
     }
 
 
