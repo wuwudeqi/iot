@@ -105,13 +105,6 @@ public class RequestDecoder extends ByteToMessageDecoder {
 
                 //继续往下传递
                 out.add(requestCmd);
-                RequestCmd request = new RequestCmd();
-                request.setModule(module);
-                request.setCmd(cmd);
-                request.setData(data);
-
-                //继续往下传递
-                out.add(request);
 
             }
         }
