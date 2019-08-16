@@ -2,6 +2,7 @@ package com.ekoplat.iot.repository;
 
 import com.ekoplat.iot.dataobject.PackageInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author wuwudeqi
@@ -11,4 +12,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PackageRepository extends JpaRepository<PackageInfo, Integer> {
     PackageInfo findFirstBytypeNumOrderByIdDesc(String typeNum);
     PackageInfo findFirstBytypeNameOrderByIdDesc(String typeName);
+    @Transactional
+    void deleteByVersion(String version);
 }

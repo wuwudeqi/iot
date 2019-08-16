@@ -287,8 +287,8 @@ public class FileUploadController {
                 ExcelUtil.writeExcel("lock_update_success", lock_success_map, fileOutputStream2);
                 redisTemplate.delete("lock_success_map");
             }
-
         }
+
         String fileName = typeName + "_result.xlsx";
         File file = new File(excelPath + fileName);
         if (file.exists()) {
