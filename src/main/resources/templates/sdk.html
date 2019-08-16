@@ -1,23 +1,174 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
-<html>
 <head>
-    <meta charset="utf-8">
-    <title>file upload</title>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
 </head>
 <body>
+
+<h2>升级包管理</h2>
+条件：<p><input id="txt_search" type="text"/> <input id="btn_search" type="button" value="模糊查询"/>
+    <input type="button" id="del_btn" value="删除"/>
+
+<table id="tab" border="1">
+    <tr>
+        <th><input type="checkbox" id="selectAll"/>全选 <input type="checkbox" id="ReverseSelect"/>反选</th>
+        <th>id</th>
+        <th>包名</th>
+        <th>版本号</th>
+        <th>上传时间</th>
+        <th>类型</th>
+    </tr>
+</table>
+
 <h2>被动升级包上传</h2>
-<hr/>
-<form method="POST" enctype="multipart/form-data" action="upload">
-    网关的最新版本:<span th:text="${lastGatewayVersion}"></span>&nbsp;锁的最新版本<span th:text="${lastLockVersion}"></span><br>
-    <p>
-        package：<input type="file" name="file" placeholder="请填入.bin文件"/> <br>
-        name：<input type="text" name="typeName" placeholder="请填入升级包名字" /> <br>
-        version: <input type="text" name="version" placeholder="请填入升级包版本号(带小数点)" /> <br>
-    </p>
-    <p>
-        <input type="submit" value="上传" />
-    </p>
-</form>
+网关的最新版本:<span id="lastGatewayVersion" text="" ></span>&nbsp;锁的最新版本<span id="lastLockVersion" text="" ></span><br>
+<p>
+    package：<input type="file" name="file" placeholder="请填入.bin文件"/> <br>
+    name：<input type="text" name="typeName" placeholder="请填入升级包名字"/> <br>
+    version: <input type="text" name="version" placeholder="请填入升级包版本号(带小数点)"/> <br>
+</p>
+<p>
+    <button onclick="uploadFile()">上传</button>
+</p>
+
+<script src="./js/jquery-1.8.3.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $(function () {
+        var lastGatewayVersion;
+        var lastLockVersion;
+        selectStu();
+        $.ajax({
+            url: 'getLastVersion',
+            async: false,
+            type: 'get',
+            //这儿的三个参数其实就是XMLHttpRequest里面带的信息。
+            success: function (result) {
+                lastGatewayVersion = result['lastGatewayVersion'];
+                lastLockVersion = result['lastLockVersion'];
+            }
+        });
+        document.getElementById("lastGatewayVersion").innerText = lastGatewayVersion;
+        document.getElementById("lastLockVersion").innerText = lastLockVersion;
+    });
+
+    function uploadFile() {
+            var typeName = document.getElementsByName('typeName')[0].value;
+            var version = document.getElementsByName('version')[0].value;
+            var file_obj = document.getElementsByName('file')[0].files[0];
+            var fd = new FormData();
+            fd.append('typeName', typeName);
+            fd.append('version', version);
+            fd.append('file', file_obj);
+
+            $.ajax({
+                url: 'upload',
+                type: 'POST',
+                async: false,
+                data: fd,
+                processData: false,  //tell jQuery not to process the data
+                contentType: false,  //tell jQuery not to set contentType
+                //这儿的三个参数其实就是XMLHttpRequest里面带的信息。
+                success: function (result) {
+                    alert(result);
+                }
+            })
+            location.reload();
+        }
+
+        function selectStu() {
+            $.ajax({
+                type: "get",
+                url: "getAllPackage",
+                success: function (data) {
+                    //循环遍历
+                    $.each(data, function (index, obj) {
+                        $("#tab").append(
+                            "<tr>" +
+                            //首先从数据库读出数据 因为数据库主键是学号，而且对学号进行操作
+                            //在input里面的值value添加数据中的学号
+                            "<td><input name='stu' value='" + obj.typeName + '_v' + obj.version + '.bin' + "' type='checkbox' /></td>" +
+                            "<td>" + obj.id + "</td>" +
+                            "<td>" + obj.typeName + "</td>" +
+                            "<td>" + obj.version + "</td>" +
+                            "<td>" + obj.createTime + "</td>" +
+                            "<td>" + obj.updateType + "</td>" +
+                            "</tr>"
+                        );
+                    })
+                }
+            })
+        }
+
+        $(function () {
+            $("#btn_search").on("click", function () {
+                var text = $("#txt_search").val();
+                $("#tab tr").not(":first").remove();
+                $.ajax({
+                    type: "get",
+                    data: {"method": "FuzzyQuery", "likeInfo": text},
+                    success: function (data) {
+                        $.each(data, function (index, obj) {
+                            $("#tab").append(
+                                "<tr>" +
+                                "<td><input name='stu' value='" + obj.typeName + '_v' + obj.version + '.bin' + "' type='checkbox' /></td>" +
+                                "<td>" + obj.id + "</td>" +
+                                "<td>" + obj.typeName + "</td>" +
+                                "<td>" + obj.version + "</td>" +
+                                "<td>" + obj.createTime + "</td>" +
+                                "<td>" + obj.updateType + "</td>" +
+                                "</tr>"
+                            );
+                        })
+                    }
+                })
+            });
+            //这个方法可以替代toggle()   toggle()在jQuery 1.9中已经移除
+            //两个函数的绑定
+            var i = 0;
+            //全选
+            $("#selectAll").on("click", function () {
+                if (i == 0) {
+                    //把所有复选框选中
+                    $("#tab td :checkbox").prop("checked", true);
+                    i = 1;
+                } else {
+                    $("#tab td :checkbox").prop("checked", false);
+                    i = 0;
+                }
+
+            });
+
+            //反选
+            $("#ReverseSelect").on("click", function () {
+
+                $("#tab td :checkbox").each(function () {
+                    //遍历所有复选框，然后取值进行 !非操作
+                    $(this).prop("checked", !$(this).prop("checked"));
+                })
+            });
+
+            $("#del_btn").on("click", function () {
+                var arr = new Array();
+                $('#tab input:checkbox[name=stu]:checked').each(function (i) {
+                    arr[i] = $(this).val();
+                });
+                var vals = arr.join(",");
+                alert(vals + " 确认删除以上包吗");
+                $.ajax({
+                    type: "post",
+                    url: "deletePackage",
+                    data: {"fileNames": vals},
+                    success: function (data) {
+                        alert("删除成功\n" + data + "条");
+                        // $("#tab tr").not(":first").remove();
+                        // selectStu();
+                        location.reload();
+                    }
+                });
+            })
+
+        })
+</script>
 </body>
 </html>

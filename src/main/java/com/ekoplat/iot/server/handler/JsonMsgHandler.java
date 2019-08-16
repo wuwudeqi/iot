@@ -34,7 +34,9 @@ public class JsonMsgHandler extends ChannelInboundHandlerAdapter {
                     break;
                 case 1:
                     String onlockId = json.getString("ADD-OK");
-                    gatewayAndLockService.bindLock(gwId, onlockId);
+                    if (!"".equals(onlockId)) {
+                        gatewayAndLockService.bindLock(gwId, onlockId);
+                    }
                     break;
                 case 2:
                     String offlockId = json.getString("DEL-DEV");

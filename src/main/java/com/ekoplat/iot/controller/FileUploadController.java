@@ -177,7 +177,7 @@ public class FileUploadController {
                 return view;
             }
 
-            upload(lockIdPackage, typeName, updateVersion);
+            upload(lockIdPackage, typeName + "/active", updateVersion);
             log.info("升级包上传成功");
 
             List<String> lockList = ExcelUtil.readExcelFile(lockIdExcel.getInputStream(), LockExcelName);
@@ -270,7 +270,6 @@ public class FileUploadController {
 
     // 文件下载相关代码
     @RequestMapping("updateSuccess/{typeName}")
-    @ResponseBody
     public void updateSuccess(HttpServletResponse response, @PathVariable String typeName) throws Exception {
         ValueOperations ops = redisTemplate.opsForValue();
         if (typeName.equals("gateway_update_success")) {
@@ -288,47 +287,12 @@ public class FileUploadController {
                 ExcelUtil.writeExcel("lock_update_success", lock_success_map, fileOutputStream2);
                 redisTemplate.delete("lock_success_map");
             }
-
         }
+
         String fileName = typeName + "_result.xlsx";
-        if (fileName != null) {
-            //设置文件路径
-            File file = new File(excelPath + fileName);
-            if (file.exists()) {
-                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                response.addHeader("Content-Disposition", "attachment;filename=" + fileName);
-                // filePath生成的excel文件存放路径
-                FileInputStream fis = new FileInputStream(excelPath + fileName);
-                byte[] buffer = new byte[1024];
-                BufferedInputStream bis = null;
-                try {
-                    bis = new BufferedInputStream(fis);
-                    OutputStream os = response.getOutputStream();
-                    int i = bis.read(buffer);
-                    while (i != -1) {
-                        os.write(buffer, 0, i);
-                        i = bis.read(buffer);
-                    }
-                    log.info("【文件下载】success");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (bis != null) {
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (fis != null) {
-                        try {
-                            fis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+        File file = new File(excelPath + fileName);
+        if (file.exists()) {
+            downloadFile(response,typeName);
         }
     }
 
