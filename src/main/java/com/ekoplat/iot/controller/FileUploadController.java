@@ -177,7 +177,7 @@ public class FileUploadController {
                 return view;
             }
 
-            upload(lockIdPackage, typeName, updateVersion);
+            upload(lockIdPackage, typeName + "/active", updateVersion);
             log.info("升级包上传成功");
 
             List<String> lockList = ExcelUtil.readExcelFile(lockIdExcel.getInputStream(), LockExcelName);
