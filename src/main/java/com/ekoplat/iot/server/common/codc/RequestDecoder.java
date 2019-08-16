@@ -36,6 +36,7 @@ public class RequestDecoder extends ByteToMessageDecoder {
             //复制内容到字节数组b
             buffer.readBytes(b);
             String s = new String(b);
+            //临时
             out.add(s);
 //            byte[] encryptBytes = new byte[256];
 //            //去掉末尾 00 00
