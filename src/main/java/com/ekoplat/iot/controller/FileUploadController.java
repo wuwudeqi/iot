@@ -271,7 +271,7 @@ public class FileUploadController {
     // 文件下载相关代码
     @RequestMapping("updateSuccess/{typeName}")
     @ResponseBody
-    public String updateSuccess(HttpServletResponse response, @PathVariable String typeName) throws Exception {
+    public void updateSuccess(HttpServletResponse response, @PathVariable String typeName) throws Exception {
         ValueOperations ops = redisTemplate.opsForValue();
         if (typeName.equals("gateway_update_success")) {
             Map<String, String> gateway_success_map = (Map<String, String>) ops.get("gateway_success_map");
@@ -329,10 +329,7 @@ public class FileUploadController {
                     }
                 }
             }
-        } else {
-            return "设备还在更新请稍后";
         }
-        return "请返回继续下载";
     }
 
 
