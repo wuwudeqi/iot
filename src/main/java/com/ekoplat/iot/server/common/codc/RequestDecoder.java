@@ -3,6 +3,7 @@ package com.ekoplat.iot.server.common.codc;
 
 import com.ekoplat.iot.server.common.constant.Head;
 import com.ekoplat.iot.server.common.model.RequestCmd;
+import com.ekoplat.iot.util.TeaUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -35,45 +36,47 @@ public class RequestDecoder extends ByteToMessageDecoder {
             byte[] b = new byte[buffer.readableBytes()];
             //复制内容到字节数组b
             buffer.readBytes(b);
-            String s = new String(b);
-            //临时
-            out.add(s);
-//            byte[] encryptBytes = new byte[256];
-//            //去掉末尾 00 00
-//            System.arraycopy(b, 0, encryptBytes, 0, 256);
-//            int[] encryptInts = new int[256];
-//            for (int i = 0; i < 256; i++) {
-//                encryptInts[i] = encryptBytes[i] & 0xff;
-//            }
-//            //将int数组转换long数组
-//            long[] encryptLongs = TeaUtil.int2long(encryptInts);
-//            //解密long
-//            long[] decrpyt = TeaUtil.decrpyt(encryptLongs);
-//            //将long类型分解成实际byte
-//            byte[] decrpytBytes = TeaUtil.long2byte(decrpyt);
-//
-//            byte[] head = new byte[4];
-//            System.arraycopy(decrpytBytes, 0, head, 0, 4);
-//            if (TeaUtil.getLong(head) != Head.FLAG) {
-//                String str = new String(decrpytBytes);
-//                out.add(str);
-//            } else {
-//                byte[] modelBytes = new byte[2];
-//                byte[] cmdBytes = new byte[2];
-//                byte[] dataLengthBytes = new byte[4];
-//                System.arraycopy(decrpytBytes, 4, modelBytes, 0, 2);
-//                System.arraycopy(decrpytBytes, 6, cmdBytes, 0, 2);
-//                System.arraycopy(decrpytBytes, 8, dataLengthBytes, 0, 4);
-//                long dataLength = TeaUtil.getLong(dataLengthBytes);
-//                byte[] data = new byte[(int) dataLength];
-//                System.arraycopy(decrpytBytes, 12, data, 0, (int) dataLength);
-//
-//                RequestCmd requestCmd = new RequestCmd();
-//                requestCmd.setModule((short) TeaUtil.getLong(modelBytes));
-//                requestCmd.setCmd((short) TeaUtil.getLong(cmdBytes));
-//                requestCmd.setData(data);
-//                out.add(requestCmd);
-//            }
+
+//            String s = new String(b);
+//            //临时
+//            out.add(s);
+
+            byte[] encryptBytes = new byte[256];
+            //去掉末尾 00 00
+            System.arraycopy(b, 0, encryptBytes, 0, 256);
+            int[] encryptInts = new int[256];
+            for (int i = 0; i < 256; i++) {
+                encryptInts[i] = encryptBytes[i] & 0xff;
+            }
+            //将int数组转换long数组
+            long[] encryptLongs = TeaUtil.int2long(encryptInts);
+            //解密long
+            long[] decrpyt = TeaUtil.decrpyt(encryptLongs);
+            //将long类型分解成实际byte
+            byte[] decrpytBytes = TeaUtil.long2byte(decrpyt);
+
+            byte[] head = new byte[4];
+            System.arraycopy(decrpytBytes, 0, head, 0, 4);
+            if (TeaUtil.getLong(head) != Head.FLAG) {
+                String str = new String(decrpytBytes);
+                out.add(str);
+            } else {
+                byte[] modelBytes = new byte[2];
+                byte[] cmdBytes = new byte[2];
+                byte[] dataLengthBytes = new byte[4];
+                System.arraycopy(decrpytBytes, 4, modelBytes, 0, 2);
+                System.arraycopy(decrpytBytes, 6, cmdBytes, 0, 2);
+                System.arraycopy(decrpytBytes, 8, dataLengthBytes, 0, 4);
+                long dataLength = TeaUtil.getLong(dataLengthBytes);
+                byte[] data = new byte[(int) dataLength];
+                System.arraycopy(decrpytBytes, 12, data, 0, (int) dataLength);
+
+                RequestCmd requestCmd = new RequestCmd();
+                requestCmd.setModule((short) TeaUtil.getLong(modelBytes));
+                requestCmd.setCmd((short) TeaUtil.getLong(cmdBytes));
+                requestCmd.setData(data);
+                out.add(requestCmd);
+            }
         } else {
             buffer.readerIndex(beginReader);
 
