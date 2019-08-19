@@ -56,7 +56,7 @@ public class NettyServer {
         return f;
     }
 
-    public void destroy() {
+    public static void destroy() {
         log.info("Shutdown Netty Server...");
         if (channel != null) {
             channel.close();

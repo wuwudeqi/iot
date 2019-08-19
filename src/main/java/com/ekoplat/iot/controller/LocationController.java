@@ -2,6 +2,7 @@ package com.ekoplat.iot.controller;
 
 import com.ekoplat.iot.dataobject.PackageInfo;
 import com.ekoplat.iot.repository.PackageRepository;
+import com.ekoplat.iot.server.NettyServer;
 import com.ekoplat.iot.service.GatewayAndLockService;
 import com.ekoplat.iot.util.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -103,6 +104,8 @@ public class LocationController {
     @GetMapping("offLineAll")
     @ResponseBody
     public String offLineAll() {
+        //断开所有连接
+        NettyServer.destroy();
         //将全部的网关状态设置为0
         GatewayAndLockService gatewayAndLockService = SpringUtil.getBean(GatewayAndLockService.class);
         gatewayAndLockService.changeAllGwStatus();
