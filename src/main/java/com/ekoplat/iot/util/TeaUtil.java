@@ -307,7 +307,7 @@ public class TeaUtil {
     }
 
     public static void main(String[] args) {
-        String str = "{\"GW-ID\":\"00000000000033\",\"type\":30,\"MNC\":0,\"LAC\":22570,\"CI\":60319, \"version\":\"3.10\"}";
+        String str = "{\"Gm3-Test\":\"0000000000003F\"}";
         byte[] bytes = str.getBytes();
         long[] resultLong = byte2long(bytes);
         long[] encrypt = encrypt(resultLong);
