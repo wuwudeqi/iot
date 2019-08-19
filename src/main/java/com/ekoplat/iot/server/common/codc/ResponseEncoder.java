@@ -22,7 +22,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * 长度4字节(描述数据部分字节长度)
  * <<<<<<< Updated upstream
  *
- * @author -琴兽-
+ * @author wuwudeqi
  */
 public class ResponseEncoder extends MessageToByteEncoder {
 
