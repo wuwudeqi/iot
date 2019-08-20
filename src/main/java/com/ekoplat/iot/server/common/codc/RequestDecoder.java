@@ -7,9 +7,11 @@ import com.ekoplat.iot.util.TeaUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 public class RequestDecoder extends ByteToMessageDecoder {
 
 
@@ -49,12 +51,14 @@ public class RequestDecoder extends ByteToMessageDecoder {
                 for (int i = 0; i < 256; i++) {
                     encryptInts[i] = encryptBytes[i] & 0xff;
                 }
+
                 //将int数组转换long数组
                 long[] encryptLongs = TeaUtil.int2long(encryptInts);
                 //解密long
                 long[] decrpyt = TeaUtil.decrpyt(encryptLongs);
                 //将long类型分解成实际byte
                 byte[] decrpytBytes = TeaUtil.long2byte(decrpyt);
+
 
                 byte[] head = new byte[4];
                 System.arraycopy(decrpytBytes, 0, head, 0, 4);

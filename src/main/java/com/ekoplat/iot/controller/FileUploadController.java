@@ -5,12 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.ekoplat.iot.dataobject.GatewayAndLock;
 import com.ekoplat.iot.dataobject.PackageInfo;
 import com.ekoplat.iot.repository.PackageRepository;
-import com.ekoplat.iot.server.handler.ChannelMap;
 import com.ekoplat.iot.service.GatewayAndLockService;
 import com.ekoplat.iot.util.CmdUtil;
 import com.ekoplat.iot.util.ExcelUtil;
 import com.ekoplat.iot.util.FileUtil;
-import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -205,10 +203,8 @@ public class FileUploadController {
 
         }
 
-        for (String ip : gwLock_success_Map.keySet()) {
-            Channel channel = ChannelMap.getChannelByName(ip);
-            CmdUtil.sendActiveUpdate(gwLock_success_Map.get(ip), channel);
-        }
+        CmdUtil.sendActiveUpdateCmd(gwLock_success_Map);
+
 
         view.setViewName("excelResult");
         FileOutputStream fileOutputStream = new FileOutputStream(excelPath + "/send_success_result.xlsx");
@@ -292,7 +288,7 @@ public class FileUploadController {
         String fileName = typeName + "_result.xlsx";
         File file = new File(excelPath + fileName);
         if (file.exists()) {
-            downloadFile(response,typeName);
+            downloadFile(response, typeName);
         }
     }
 

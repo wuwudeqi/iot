@@ -6,6 +6,9 @@ import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/***
+ * 定位服务
+ */
 public class DeviceLocation {
 
     public static String load(int mnc, int lac, int ci) throws Exception
@@ -37,7 +40,7 @@ public class DeviceLocation {
         {
             resultStr +=line;
         }
-        System.out.println(resultStr);
+
         bReader.close();
 
         return resultStr;

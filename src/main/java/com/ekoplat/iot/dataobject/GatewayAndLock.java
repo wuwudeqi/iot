@@ -36,5 +36,7 @@ public class GatewayAndLock {
 
     private String address;
 
-    private String version;
+    private String gwVersion;
+
+    private String lockVersion;
 }

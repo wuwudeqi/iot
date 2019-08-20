@@ -6,6 +6,7 @@ import com.ekoplat.iot.util.TeaUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -24,6 +25,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  *
  * @author wuwudeqi
  */
+@Slf4j
 public class ResponseEncoder extends MessageToByteEncoder {
 
 
@@ -52,6 +54,8 @@ public class ResponseEncoder extends MessageToByteEncoder {
             }
             //校验码
             out.writeShort(responsePackage.getCode());
+
+            log.info("升级发送成功");
         } else if (o instanceof ResponseCmd) {
             ResponseCmd responseCmd = (ResponseCmd) o;
             byte[] headBytes = new byte[]{

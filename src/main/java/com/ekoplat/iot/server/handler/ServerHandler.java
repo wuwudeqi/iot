@@ -15,8 +15,6 @@ import com.ekoplat.iot.util.Common;
 import com.ekoplat.iot.util.SpringUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,7 +44,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<Object> {
         }else if (msg instanceof RequestCmd) {
 
             RequestCmd requestCmd = (RequestCmd) msg;
-            log.info("【服务器收到】requestCmd: {}, ip: {}", msg.toString(), Common.getIP(ctx.channel().remoteAddress().toString()));
+            log.info("【服务器收到】requestCmd:{}, ip: {}", msg.toString(), Common.getIP(ctx.channel().remoteAddress().toString()));
             ctx.fireChannelRead(requestCmd);
         }
     }
@@ -67,16 +65,16 @@ public class ServerHandler extends SimpleChannelInboundHandler<Object> {
         log.info("【设备失去连接】ip:{}",ip);
     }
 
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        String ip = Common.getIP(ctx.channel().remoteAddress().toString());
-        super.userEventTriggered(ctx, evt);
-        if (evt instanceof IdleStateEvent) {
-            IdleStateEvent event = (IdleStateEvent) evt;
-            if (event.state().equals(IdleState.READER_IDLE)) {
-                log.error("【设备离线】60s没有心跳，{}离线",ip);
-            }
-        }
-    }
+//    @Override
+//    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+//        String ip = Common.getIP(ctx.channel().remoteAddress().toString());
+//        super.userEventTriggered(ctx, evt);
+//        if (evt instanceof IdleStateEvent) {
+//            IdleStateEvent event = (IdleStateEvent) evt;
+//            if (event.state().equals(IdleState.READER_IDLE)) {
+//                log.error("【设备离线】60s没有心跳，{}离线",ip);
+//            }
+//        }
+//    }
 }
 

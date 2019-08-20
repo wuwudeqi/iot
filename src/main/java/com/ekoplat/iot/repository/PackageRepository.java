@@ -13,5 +13,5 @@ public interface PackageRepository extends JpaRepository<PackageInfo, Integer> {
     PackageInfo findFirstBytypeNumOrderByIdDesc(String typeNum);
     PackageInfo findFirstBytypeNameOrderByIdDesc(String typeName);
     @Transactional
-    void deleteByVersion(String version);
+    void deleteByTypeNameAndVersion(String typeName, String version);
 }

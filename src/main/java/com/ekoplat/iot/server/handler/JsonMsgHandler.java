@@ -56,10 +56,18 @@ public class JsonMsgHandler extends ChannelInboundHandlerAdapter {
                         e.printStackTrace();
                     }
                     log.info("【设备定位】id={} address={}",gwId,address);
-                    String version = json.getString("version");
+                    JSONObject versionJson = json.getJSONObject("version");
+                    String gatewayVersion = versionJson.getString("gateway");
+                    String lockVersion = versionJson.getString("lock");
                     GatewayAndLock gatewayAndLock = gatewayAndLockService.findBygwId(gwId);
+                    if (gatewayAndLock == null) {
+                        gatewayAndLock = new GatewayAndLock();
+                        gatewayAndLock.setIp(ip);
+                        gatewayAndLock.setGwId(gwId);
+                    }
                     gatewayAndLock.setAddress(address);
-                    gatewayAndLock.setVersion(version);
+                    gatewayAndLock.setGwVersion(gatewayVersion);
+                    gatewayAndLock.setLockVersion(lockVersion);
                     gatewayAndLockService.save(gatewayAndLock);
                     gatewayAndLockService.changeGwStatus(gwId, ip, 1);
                     break;
