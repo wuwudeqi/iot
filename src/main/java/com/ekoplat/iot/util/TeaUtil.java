@@ -1,6 +1,7 @@
 package com.ekoplat.iot.util;
 
 import com.ekoplat.iot.server.common.constant.Head;
+import com.ekoplat.iot.server.common.model.ResponseCmd;
 
 /**
  * Tea算法
@@ -223,6 +224,7 @@ public class TeaUtil {
             char[] lengthHex = Long.toHexString(decrpyt[2]).toCharArray();
             String str = "";
             if (lengthHex.length != 8) {
+                str = "";
                 char[] tempHexNum = lengthHex;
                 lengthHex = new char[8];
                 int n = tempHexNum.length;
@@ -231,10 +233,10 @@ public class TeaUtil {
                 }
                 System.arraycopy(tempHexNum, 0, lengthHex, 8 - n, n);
                 byte[] realByte = new byte[4];
-                for (int i = 7; i > 0; i -= 2) {
-                    String tempStr = lengthHex[i - 1] + "" + lengthHex[i];
-                    str = str + tempStr;
-                }
+            }
+            for (int i = 7; i > 0; i -= 2) {
+                String tempStr = lengthHex[i - 1] + "" + lengthHex[i];
+                str = str + tempStr;
             }
 
             int dataLength = Integer.parseInt(str,16);
@@ -306,8 +308,49 @@ public class TeaUtil {
         return resultLong;
     }
 
+    public static long[] bytesEncrypt(ResponseCmd o) {
+        ResponseCmd responseCmd = (ResponseCmd) o;
+        byte[] headBytes = new byte[]{
+                0x11, 0x22, 0x33, 0x44
+        };
+
+        short moduleShort = responseCmd.getModule();
+        byte highModuleShort = (byte) (0x00FF & (moduleShort >> 8));//定义第一个byte
+        byte lowModuleShort = (byte) (0x00FF & moduleShort);//定义第二个byte
+        byte[] moduleBytes = new byte[]{
+                highModuleShort, lowModuleShort
+        };
+        short cmdShort = responseCmd.getCmd();
+        byte highCmdShort = (byte) (0x00FF & (cmdShort >> 8));//定义第一个byte
+        byte lowCmdShort = (byte) (0x00FF & cmdShort);//定义第二个byte
+        byte[] cmdBytes = new byte[]{
+                highCmdShort, lowCmdShort
+        };
+
+        int lengthInt = responseCmd.getLength();
+        byte firstLength = (byte) (0x000000FF & (lengthInt >> 24));//定义第一个byte
+        byte secondLength = (byte) (0x000000FF & (lengthInt >> 16));//定义第二个byte
+        byte thirdLength = (byte) (0x000000FF & (lengthInt >> 8));//定义第三个byte
+        byte fourthLength = (byte) (0x000000FF & (lengthInt));//定义第四个byte
+        byte[] lengthBytes = new byte[]{
+                firstLength, secondLength, thirdLength, fourthLength
+        };
+        byte[] data = responseCmd.getData();
+
+        byte[] originalBytes = new byte[256];
+        System.arraycopy(headBytes, 0, originalBytes, 0, 4);
+        System.arraycopy(moduleBytes, 0, originalBytes, 4, 2);
+        System.arraycopy(cmdBytes, 0, originalBytes, 6, 2);
+        System.arraycopy(lengthBytes, 0, originalBytes, 8, 4);
+        System.arraycopy(data, 0, originalBytes, 12, data.length);
+
+        long[] longs = TeaUtil.byte2long(originalBytes);
+        long[] encrypt = TeaUtil.encrypt(longs);
+        return  encrypt;
+    }
+
     public static void main(String[] args) {
-        String str = "{\"GW-ID\":\"00000000000033\",\"type\":0,\"BEAT\":\"send\"}";
+        String str = "{\"GW-ID\":\"00000000000033\",\"type\":30,\"MNC\":0,\"LAC\":22570,\"CI\":60319,version:{\"gateway\":\"3.1\",\"lock\":\"3.1\"}} ";
         byte[] bytes = str.getBytes();
         long[] resultLong = byte2long(bytes);
         long[] encrypt = encrypt(resultLong);
@@ -327,5 +370,23 @@ public class TeaUtil {
         byte[] realBytes = long2byte(decrpyt);
         String s = new String(realBytes);
         System.out.println(s);
+    }
+
+    public static void main1(String[] args) {
+        byte[] orginal = new byte[]{
+                0x11,0x22,0x33,0x44,0x00,0x02,0x00,0x01,0x00,0x00,0x00,0x04,0x01,0x01,0x01,0x01};
+        byte[] orginal1 = new byte[]{
+                0x11,0x22,0x33,0x44,0x0002,0x00,0x03,0x00,0x00,0x00,0x12,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x33,0x33,0x00,0x00,0x03,0x02};
+        long[] longs = byte2long(orginal);
+        long[] encrypt = encrypt(longs);
+        //发送的加密
+        int[] sendMsg = long2int(encrypt);
+        for (int i = 0; i < sendMsg.length; i++) {
+            String n = Integer.toHexString(sendMsg[i]);
+            if(n.length()== 1) {
+                n = '0' + n;
+            }
+            System.out.printf(n+" ");
+        }
     }
 }

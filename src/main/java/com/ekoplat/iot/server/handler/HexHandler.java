@@ -184,6 +184,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                     id = StringAndByte.hexStringToString(StringAndByte.bytesToHexString(idBytes));
                     typeNum = Hex.encodeHexString(new byte[]{data[14]},false) + Hex.encodeHexString(new byte[]{data[15]},false);
                     version = String.valueOf((int)data[16]) + "."+String.valueOf((int)data[17]);
+                    log.info("【升级的内容】id={}, typeNum={}, version={}",id,typeNum,version);
                     PackageInfo packgeInfo = repository.findFirstBytypeNumOrderByIdDesc(typeNum);
                     FileUploadController  fileUploadController = SpringUtil.getBean(FileUploadController.class);
                     String filePath = fileUploadController.filePath + packgeInfo.getTypeName()+"_v"+packgeInfo.getVersion()+".bin";
@@ -196,7 +197,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                 if (message.getCmd() == 0) {
                     log.info("不需要升级");
                 } else if (message.getCmd() == 1) {
-                    log.info("success " + ip + " " + module + " " + StringAndByte.toHexString1(message.getData()));
+//                    log.info("success " + ip + " " + module + " " + StringAndByte.toHexString1(message.getData()));
                     int datalength = 512;
                     int length = packageBytes.length;
                     //设置包数
@@ -248,6 +249,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                             }
                             gateway_success_map.put(id,sdf.format(new Date()));
                             ops.set("gateway_success_map",gateway_success_map);
+                            log.info("【网关升级成功】id={}",id);
                         }
                         if( typeNum.equals(lockHexTypeNum)) {
                             Map<String, String> lock_success_map = (HashMap<String, String>) ops.get("lock_success_map");
@@ -256,13 +258,14 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                             }
                             lock_success_map.put(id, sdf.format(new Date()));
                             ops.set("lock_success_map",lock_success_map);
+                            log.info("【锁升级成功】id={}",id);
                         }
                     }
                     /**
                      * 硬件得到错误的包的返回处理
                      */
                 } else if (message.getCmd() == 2) {
-                    log.info("fail " + ip + " " + module + " " + StringAndByte.toHexString1(message.getData()));
+//                    log.info("fail " + ip + " " + module + " " + StringAndByte.toHexString1(message.getData()));
                     ctx.channel().writeAndFlush(responsePackage);
                     log.info("fail " + ip + ": " + module + " " + StringAndByte.toHexString1(responsePackage.getData()));
                 }

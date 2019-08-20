@@ -2,6 +2,7 @@ package com.ekoplat.iot.controller;
 
 import com.ekoplat.iot.dataobject.PackageInfo;
 import com.ekoplat.iot.repository.PackageRepository;
+import com.ekoplat.iot.server.NettyServer;
 import com.ekoplat.iot.service.GatewayAndLockService;
 import com.ekoplat.iot.util.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -63,11 +64,16 @@ public class LocationController {
     @PostMapping("deletePackage")
     @ResponseBody
     public Integer deletePackage(String[] fileNames) {
-        List<String> versionList = new ArrayList<String>();
+        Map<String,List<String>> map = new HashMap<String,List<String>>();
         for (String fileName : fileNames) {
             String[] ts = fileName.split("_v");
             String[] split = ts[1].split("\\.");
-            versionList.add(split[0] + "." +split[1]);
+            List list = map.get("gateway");
+            if (list == null) {
+                list = new ArrayList<String>();
+            }
+            list.add(split[0] + "." +split[1]);
+            map.put(ts[0],list);
         }
         for (String filename : fileNames) {
             File file = new File(filePath+filename);
@@ -77,8 +83,10 @@ public class LocationController {
 
         }
         log.info("【升级包】选择升级包服务器删除成功");
-        for (String version : versionList) {
-            packageRepository.deleteByVersion(version);
+        for (String typeName : map.keySet()) {
+            for(String version : map.get(typeName)){
+                packageRepository.deleteByTypeNameAndVersion(typeName,version);
+            }
         }
         log.info("【升级包】选择升级包数据库删除成功");
         return fileNames.length;
@@ -103,6 +111,8 @@ public class LocationController {
     @GetMapping("offLineAll")
     @ResponseBody
     public String offLineAll() {
+        //断开所有连接
+        NettyServer.destroy();
         //将全部的网关状态设置为0
         GatewayAndLockService gatewayAndLockService = SpringUtil.getBean(GatewayAndLockService.class);
         gatewayAndLockService.changeAllGwStatus();

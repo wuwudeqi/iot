@@ -33,4 +33,10 @@ public class GatewayAndLock {
     private String lockId;
 
     private Integer lockStatus;
+
+    private String address;
+
+    private String gwVersion;
+
+    private String lockVersion;
 }

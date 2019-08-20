@@ -4,6 +4,7 @@ package com.ekoplat.iot.server.handler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ekoplat.iot.dataobject.GatewayAndLock;
+import com.ekoplat.iot.location.DeviceLocation;
 import com.ekoplat.iot.server.common.model.RequestCmd;
 import com.ekoplat.iot.service.GatewayAndLockService;
 import com.ekoplat.iot.util.Common;
@@ -45,6 +46,29 @@ public class JsonMsgHandler extends ChannelInboundHandlerAdapter {
                 case 30:
                     //将ip作为键存入map
                     ChannelMap.addChannel(ip, ctx.channel());
+                    int mnc = json.getInteger("MNC");
+                    int lac = json.getInteger("LAC");
+                    int ci = json.getInteger("CI");
+                    String address = null;
+                    try {
+                        address = DeviceLocation.load(mnc, lac, ci);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    log.info("【设备定位】id={} address={}",gwId,address);
+                    JSONObject versionJson = json.getJSONObject("version");
+                    String gatewayVersion = versionJson.getString("gateway");
+                    String lockVersion = versionJson.getString("lock");
+                    GatewayAndLock gatewayAndLock = gatewayAndLockService.findBygwId(gwId);
+                    if (gatewayAndLock == null) {
+                        gatewayAndLock = new GatewayAndLock();
+                        gatewayAndLock.setIp(ip);
+                        gatewayAndLock.setGwId(gwId);
+                    }
+                    gatewayAndLock.setAddress(address);
+                    gatewayAndLock.setGwVersion(gatewayVersion);
+                    gatewayAndLock.setLockVersion(lockVersion);
+                    gatewayAndLockService.save(gatewayAndLock);
                     gatewayAndLockService.changeGwStatus(gwId, ip, 1);
                     break;
                 case 31:

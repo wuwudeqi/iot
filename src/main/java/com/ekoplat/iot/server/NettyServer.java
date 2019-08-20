@@ -6,6 +6,8 @@ package com.ekoplat.iot.server;
  * @Date: 14:20 2019-07-23
  **/
 
+import com.ekoplat.iot.service.GatewayAndLockService;
+import com.ekoplat.iot.util.SpringUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -56,7 +58,7 @@ public class NettyServer {
         return f;
     }
 
-    public void destroy() {
+    public static void destroy() {
         log.info("Shutdown Netty Server...");
         if (channel != null) {
             channel.close();
@@ -64,5 +66,8 @@ public class NettyServer {
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
         log.info("Shutdown Netty Server Success!");
+        GatewayAndLockService gatewayAndLockService = SpringUtil.getBean(GatewayAndLockService.class);
+        gatewayAndLockService.changeAllGwStatus();
+        log.info("所有设备数据库下线");
     }
 }
