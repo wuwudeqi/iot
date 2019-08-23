@@ -96,4 +96,9 @@ public class GatewayAndLockServiceImpl implements GatewayAndLockService {
         gatewayAndLockRepository.saveAll(allList);
     }
 
+    @Override
+    public List<GatewayAndLock> findAll() {
+        return  gatewayAndLockRepository.findAll();
+    }
+
 }

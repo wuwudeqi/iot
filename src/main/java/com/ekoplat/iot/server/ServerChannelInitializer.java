@@ -15,8 +15,10 @@ import com.ekoplat.iot.server.handler.ServerHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> {
@@ -40,7 +42,7 @@ public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> 
         // SslHandler要放在最前面
 //        SslHandler sslHandler = sslContext.newHandler(socketChannel.alloc());
 //        pipeline.addLast(sslHandler);
-//        pipeline.addLast("ping", new IdleStateHandler(60, 0, 0, TimeUnit.SECONDS));
+        pipeline.addLast("ping", new IdleStateHandler(60, 0, 0, TimeUnit.SECONDS));
         pipeline.addLast(new RequestDecoder());
         pipeline.addLast(new ResponseEncoder());
         pipeline.addLast(new ServerHandler());

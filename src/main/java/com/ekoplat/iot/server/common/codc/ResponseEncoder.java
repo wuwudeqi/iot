@@ -55,7 +55,7 @@ public class ResponseEncoder extends MessageToByteEncoder {
             //校验码
             out.writeShort(responsePackage.getCode());
 
-            log.info("升级发送成功");
+            log.info("升级包成功发送");
         } else if (o instanceof ResponseCmd) {
             ResponseCmd responseCmd = (ResponseCmd) o;
             byte[] headBytes = new byte[]{
@@ -105,7 +105,6 @@ public class ResponseEncoder extends MessageToByteEncoder {
             out.writeBytes(headLengthBytes);
             out.writeBytes(sendBytes);
             out.writeBytes(tailLengthBytes);
-
 //            //包头
 //            out.writeInt(responseCmd.getHEAD());
 //            //module
