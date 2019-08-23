@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 
@@ -29,7 +27,6 @@ public class CmdUtil {
      * @param gwLock_success_Map
      */
     public static void sendActiveUpdateCmd(Map<String,String> gwLock_success_Map) throws DecoderException {
-        List list = new ArrayList<ResponseCmd>();
         for (String ip : gwLock_success_Map.keySet()) {
             JSONObject json = JSON.parseObject((String) gwLock_success_Map.get(ip));
             ResponseCmd response = new ResponseCmd();
