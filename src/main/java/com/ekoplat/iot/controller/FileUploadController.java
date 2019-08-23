@@ -65,7 +65,7 @@ public class FileUploadController {
      *
      * @param file
      * @return
-     * @author 单红宇(CSDN CATOOP)
+     * @author 单红宇
      * @create 2017年3月11日
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
