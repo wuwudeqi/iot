@@ -99,14 +99,14 @@ public class FileUploadController {
                     packageInfo.setTypeNum(lockHexTypeNum);
                 }
                 packageRepository.save(packageInfo);
-                log.info("【文件上传】{}上传成功，path:{}", updateType,path);
+                log.info("【文件上传】上传成功，path:{}", path);
                 out.flush();
                 out.close();
             } catch (FileNotFoundException e) {
-                log.info("【文件上传】{}上传失败，error:{}", updateType,e.getMessage());
+                log.info("【文件上传】上传失败，error:{}", e.getMessage());
                 return "上传失败," + e.getMessage();
             } catch (IOException e) {
-                log.info("【文件上传】{}上传失败，error:{}", updateType,e.getMessage());
+                log.info("【文件上传】上传失败，error:{}", e.getMessage());
                 return "上传失败," + e.getMessage();
             }
             return "上传成功";
