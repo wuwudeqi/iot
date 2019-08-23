@@ -349,9 +349,10 @@ public class TeaUtil {
         return  encrypt;
     }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
+        String type0 = "{\"GW-ID\":\"00000000000033\",\"type\":0,\"BEAT\":\"send\"}";
         String str = "{\"GW-ID\":\"00000000000033\",\"type\":30,\"MNC\":0,\"LAC\":22570,\"CI\":60319,version:{\"gateway\":\"3.1\",\"lock\":\"3.1\"}} ";
-        byte[] bytes = str.getBytes();
+        byte[] bytes = type0.getBytes();
         long[] resultLong = byte2long(bytes);
         long[] encrypt = encrypt(resultLong);
         //发送的加密
@@ -372,12 +373,14 @@ public class TeaUtil {
         System.out.println(s);
     }
 
-    public static void main1(String[] args) {
-        byte[] orginal = new byte[]{
-                0x11,0x22,0x33,0x44,0x00,0x02,0x00,0x01,0x00,0x00,0x00,0x04,0x01,0x01,0x01,0x01};
+    public static void main(String[] args) {
+        byte[] bei = new byte[]{
+                0x11,0x22,0x33,0x44,0x00,0x01,0x00,0x01,0x00,0x00,0x00,0x04,0x00,0x00,0x00,0x00};
         byte[] orginal1 = new byte[]{
-                0x11,0x22,0x33,0x44,0x0002,0x00,0x03,0x00,0x00,0x00,0x12,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x33,0x33,0x00,0x00,0x03,0x02};
-        long[] longs = byte2long(orginal);
+                0x11,0x22,0x33,0x44,0x00,0x02,0x00,0x01,0x00,0x00,0x00,0x04,0x00,0x00,0x00,0x00};
+        byte[] orginal = new byte[]{
+                0x11,0x22,0x33,0x44,0x00,0x02,0x00,0x03,0x00,0x00,0x00,0x12,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x30,0x33,0x33,0x00,0x00,0x03,0x01};
+        long[] longs = byte2long(orginal1);
         long[] encrypt = encrypt(longs);
         //发送的加密
         int[] sendMsg = long2int(encrypt);
@@ -386,7 +389,14 @@ public class TeaUtil {
             if(n.length()== 1) {
                 n = '0' + n;
             }
-            System.out.printf(n+" ");
+            System.out.printf(n + " ");
         }
+
+        System.out.println("\n");
+        long[] longss = int2long(sendMsg);
+        long[] decrpyt = decrpyt(longss);
+        //收到的数据
+        byte[] realBytes = long2byte(decrpyt);
+        String s = new String(realBytes);
     }
 }

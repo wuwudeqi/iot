@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+</head>
+<body>
+
+<h2>主动升级</h2>
+<p><input id="txt_search" type="text"/> <input id="btn_search" type="button" value="id查询"/>
+<!--    <input type="button" id="del_btn" value="删除"/>-->
+
+    <input type="button" id="qa" value="升级"/>
+
+<table id="tab" border="1">
+    <tr>
+        <th ><input type="checkbox" id="selectAllGw"/>全选 <input type="checkbox" id="ReverseSelectGw"/>反选</th>
+        <th ><input type="checkbox" id="selectAllLock"/>全选 <input type="checkbox" id="ReverseSelectLock"/>反选</th>
+        <th>ip</th>
+        <th>gwId</th>
+        <th>gwVersion</th>
+        <th>gwStatus</th>
+        <th>lockId</th>
+        <th>lockVersion</th>
+        <th>lockStatus</th>
+        <th>address</th>
+    </tr>
+</table>
+
+<script src="./js/jquery-1.8.3.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $(function () {
+        selectStu();
+    });
+
+
+        function selectStu() {
+            $.ajax({
+                type: "get",
+                url: "getAllDevice",
+                success: function (data) {
+                    //循环遍历
+                    $.each(data, function (index, obj) {
+                        $("#tab").append(
+                            "<tr>" +
+                            "<td><input name='gwId' value='" + obj.gwId +"' type='checkbox' />网关升级</td>" +
+                            "<td><input name='lockId' value='" + obj.lockId +"' type='checkbox' />锁升级</td>" +
+                            "<td>" + obj.ip + "</td>" +
+                            "<td>" + obj.gwId + "</td>" +
+                            "<td>" + obj.gwVersion + "</td>" +
+                            "<td>" + obj.gwStatus + "</td>" +
+                            "<td>" + obj.lockId + "</td>" +
+                            "<td>" + obj.lockVersion + "</td>" +
+                            "<td>" + obj.lockStatus + "</td>" +
+                            "<td>" + obj.address + "</td>" +
+                            "</tr>"
+                        );
+                    })
+                }
+            })
+        }
+
+        $(function () {
+            $("#btn_search").on("click", function () {
+                var text = $("#txt_search").val();
+                $("#tab tr").not(":first").remove();
+                $.ajax({
+                    type: "get",
+                    url:"getDeviceById",
+                    data: {"id": text},
+                    success: function (data) {
+                        $.each(data, function (index, obj) {
+                            $("#tab").append(
+                                "<tr>" +
+                                "<td><input name='gwId' value='" + obj.gwId +"' type='checkbox' />网关升级</td>" +
+                                "<td><input name='lockId' value='" + obj.lockId +"' type='checkbox' />锁升级</td>" +
+                                "<td>" + obj.ip + "</td>" +
+                                "<td>" + obj.gwId + "</td>" +
+                                "<td>" + obj.gwVersion + "</td>" +
+                                "<td>" + obj.gwStatus + "</td>" +
+                                "<td>" + obj.lockId + "</td>" +
+                                "<td>" + obj.lockVersion + "</td>" +
+                                "<td>" + obj.lockStatus + "</td>" +
+                                "<td>" + obj.address + "</td>" +
+                                "</tr>"
+                            );
+                        })
+                    }
+                })
+            });
+            //这个方法可以替代toggle()   toggle()在jQuery 1.9中已经移除
+            //两个函数的绑定
+            var i = 0;
+            //gw全选
+            $("#selectAllGw").on("click", function () {
+                if (i == 0) {
+                    //把所有复选框选中
+                    $("#tab td input:checkbox[name=gwId]").prop("checked", true);
+                    i = 1;
+                } else {
+                    $("#tab td :checkbox").prop("checked", false);
+                    i = 0;
+                }
+
+            });
+
+            //gw反选
+            $("#ReverseSelectGw").on("click", function () {
+
+                $("#tab td input:checkbox[name=gwId]").each(function () {
+                    //遍历所有复选框，然后取值进行 !非操作
+                    $(this).prop("checked", !$(this).prop("checked"));
+                })
+            });
+
+            $("#del_btn").on("click", function () {
+                var arr = new Array();
+                $('#tab input:checkbox[name=gwId]:checked').each(function (i) {
+                    arr[i] = $(this).val();
+                });
+                var vals = arr.join(",");
+                alert(vals + " 确认删除以上包吗");
+                $.ajax({
+                    type: "post",
+                    url: "deletePackage",
+                    data: {"fileNames": vals},
+                    success: function (data) {
+                        alert("删除成功\n" + data + "条");
+                        // $("#tab tr").not(":first").remove();
+                        // selectStu();
+                        location.reload();
+                    }
+                });
+            })
+
+
+            //lock全选
+            $("#selectAllLock").on("click", function () {
+                if (i == 0) {
+                    //把所有复选框选中
+                    $("#tab td input:checkbox[name=lockId]").prop("checked", true);
+                    i = 1;
+                } else {
+                    $("#tab td input:checkbox[name=lockId]").prop("checked", false);
+                    i = 0;
+                }
+
+            });
+
+            //lock反选
+            $("#ReverseSelectLock").on("click", function () {
+
+                $("#tab td input:checkbox[name=lockId]").each(function () {
+                    //遍历所有复选框，然后取值进行 !非操作
+                    $(this).prop("checked", !$(this).prop("checked"));
+                })
+            });
+
+            $("#del_btn").on("click", function () {
+                var arr = new Array();
+                $('#tab input:checkbox[name=lockId]:checked').each(function (i) {
+                    arr[i] = $(this).val();
+                });
+                var vals = arr.join(",");
+                alert(vals + " 确认删除以上包吗");
+                $.ajax({
+                    type: "post",
+                    url: "deletePackage",
+                    data: {"fileNames": vals},
+                    success: function (data) {
+                        alert("删除成功\n" + data + "条");
+                        // $("#tab tr").not(":first").remove();
+                        // selectStu();
+                        location.reload();
+                    }
+                });
+            })
+
+        })
+</script>
+</body>
+</html>

@@ -41,6 +41,11 @@ public class LocationController {
         return "sdk";
     }
 
+    @GetMapping("activeUpdate2")
+    public String activeUpdate2() {
+        return  "activeUpdate2";
+    }
+
     @GetMapping("getLastVersion")
     @ResponseBody
     public Map<String,Object> getLastVersion() {

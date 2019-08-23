@@ -2,6 +2,8 @@ package com.ekoplat.iot.service;
 
 import com.ekoplat.iot.dataobject.GatewayAndLock;
 
+import java.util.List;
+
 /**
  * @author wuwudeqi
  * @version v1.0.0
@@ -15,4 +17,5 @@ public interface GatewayAndLockService {
     GatewayAndLock findByLockId(String lockId);
     GatewayAndLock findBygwId(String gwId);
     void changeAllGwStatus();
+    List<GatewayAndLock> findAll();
 }
