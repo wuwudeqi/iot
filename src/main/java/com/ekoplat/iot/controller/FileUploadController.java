@@ -80,7 +80,9 @@ public class FileUploadController {
         if (!file.isEmpty()) {
             try {
                 PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
-                if (!(version.compareTo(lastPackageInfo.getVersion()) > 0)) {
+                if (lastPackageInfo == null) {
+                    log.info("【数据包上传】服务器{}升级包为空", typeName);
+                } else if(!(version.compareTo(lastPackageInfo.getVersion()) > 0)){
                     return "当前服务器" + typeName + "最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + version + ",请返回重新选择升级包";
                 }
                 String fileName = FileUtil.generateFileName(typeName, version);
@@ -99,14 +101,14 @@ public class FileUploadController {
                     packageInfo.setTypeNum(lockHexTypeNum);
                 }
                 packageRepository.save(packageInfo);
-                log.info("【文件上传】{}上传成功，path:{}", updateType,path);
+                log.info("【文件上传】{}上传成功，path:{}", updateType, path);
                 out.flush();
                 out.close();
             } catch (FileNotFoundException e) {
-                log.info("【文件上传】{}上传失败，error:{}", updateType,e.getMessage());
+                log.info("【文件上传】{}上传失败，error:{}", updateType, e.getMessage());
                 return "上传失败," + e.getMessage();
             } catch (IOException e) {
-                log.info("【文件上传】{}上传失败，error:{}", updateType,e.getMessage());
+                log.info("【文件上传】{}上传失败，error:{}", updateType, e.getMessage());
                 return "上传失败," + e.getMessage();
             }
             return "上传成功";
@@ -117,7 +119,8 @@ public class FileUploadController {
 
 
     @RequestMapping("/batchUpdate")
-    public ModelAndView batchUpdate(@RequestParam("gwIdExcel") MultipartFile gwIdExcel, @RequestParam("gwIdPackage") MultipartFile gwIdPackage, @RequestParam("lockIdExcel") MultipartFile lockIdExcel, @RequestParam("lockIdPackage") MultipartFile lockIdPackage) throws IOException, DecoderException {
+    @ResponseBody
+    public String batchUpdate(@RequestParam("gwIdExcel") MultipartFile gwIdExcel, @RequestParam("gwIdPackage") MultipartFile gwIdPackage, @RequestParam("lockIdExcel") MultipartFile lockIdExcel, @RequestParam("lockIdPackage") MultipartFile lockIdPackage) throws IOException, DecoderException {
         ModelAndView view = new ModelAndView();
         String gwIdExcelName = gwIdExcel.getOriginalFilename();
         String gwIdFileName = gwIdPackage.getOriginalFilename();
@@ -132,10 +135,12 @@ public class FileUploadController {
             //或得数据库最新的版本
             PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
             //将上传的版本号和数据库版本号做比对
-            if (!(updateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+            if (lastPackageInfo == null) {
+                log.info("【主动升级】服务器{}升级包为空", typeName);
+            } else if (!(updateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
                 view.setViewName("error");
                 view.addObject("errorMsg", "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包");
-                return view;
+                return "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包";
             }
 
             upload(gwIdPackage, typeName + "/active", updateVersion);
@@ -169,10 +174,12 @@ public class FileUploadController {
             //或得数据库最新的版本
             PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
             //将上传的版本号和数据库版本号做比对
-            if (!(updateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+            if (lastPackageInfo == null) {
+                log.info("【主动升级】服务器{}升级包为空", typeName);
+            } else if (!(updateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
                 view.setViewName("error");
                 view.addObject("errorMsg", "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包");
-                return view;
+                return "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包";
             }
 
             upload(lockIdPackage, typeName + "/active", updateVersion);
@@ -213,7 +220,109 @@ public class FileUploadController {
         ExcelUtil.writeExcel("gateway_send_fail", gw_fail_Map, fileOutputStream1);
         FileOutputStream fileOutputStream2 = new FileOutputStream(excelPath + "/lock_send_fail_result.xlsx");
         ExcelUtil.writeExcel("lock_send_fail", lock_fail_Map, fileOutputStream2);
-        return view;
+        return "升级成功";
+    }
+
+
+    @RequestMapping("/batchUpdateByHtml")
+    @ResponseBody
+    public String batchUpdateByHtml(@RequestParam("gwIds") String[] gwIds, @RequestParam("gwPackage") MultipartFile gwPackage, @RequestParam("lockIds") String[] lockIds, @RequestParam("lockPackage") MultipartFile lockPackage) throws IOException, DecoderException {
+        String gwIdFileName = gwPackage.getOriginalFilename();
+        HashMap<String, String> gwLock_success_Map = new HashMap<>();
+        HashMap<String, String> gw_fail_Map = new HashMap<>();
+        HashMap<String, String> lock_fail_Map = new HashMap<>();
+        String gwUpdateVersion = null;
+        if (!"".equals(gwIdFileName) && gwIdFileName != null) {
+            //获取网关的版本号
+            byte[] gwHexVersion = FileUtil.getVersionByFileName(gwIdFileName);
+            gwUpdateVersion = String.valueOf((int) gwHexVersion[0]) + "." + String.valueOf((int) gwHexVersion[1]);
+            String typeName = FileUtil.getTypeNameByFileName(gwIdFileName);
+            //或得数据库最新的版本
+            PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
+            //将上传的版本号和数据库版本号做比对
+            if (lastPackageInfo == null) {
+                log.info("【主动升级】服务器网关的升级包为空");
+            } else if (!(gwUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+                return "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + gwUpdateVersion + ",请返回重新选择升级包";
+            }
+
+            for (String gwId : gwIds) {
+                GatewayAndLock gl = gatewayAndLockService.findBygwId(gwId);
+                if (gl == null) {
+                    gw_fail_Map.put(gwId, "{code:\"fail\", msg:\"网关从未上线\"}");
+                    continue;
+                } else if (gl.getGwStatus() == 0) {
+                    gw_fail_Map.put(gwId, "{code:\"fail\", msg:\"网关下线\"}");
+                    continue;
+                } else {
+                    gwLock_success_Map.put(gl.getIp(), "{code:\"" + gwHexTypeNum + "" + Hex.encodeHexString(gwHexVersion, false) + "\", msg:\"只升级网关\", gwId:\"" + gl.getGwId() + "\", lockId:\"\"}");
+                }
+            }
+
+        }
+
+
+        String lockIdFileName = lockPackage.getOriginalFilename();
+
+        String lockUpdateVersion = null;
+        if (!"".equals(lockIdFileName) && lockIdFileName != null) {
+            //获取网关的版本号
+            byte[] lockHexVersion = FileUtil.getVersionByFileName(lockIdFileName);
+            lockUpdateVersion = String.valueOf((int) lockHexVersion[0]) + "." + String.valueOf((int) lockHexVersion[1]);
+            String typeName = FileUtil.getTypeNameByFileName(lockIdFileName);
+            //或得数据库最新的版本
+            PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
+            //将上传的版本号和数据库版本号做比对
+            if (lastPackageInfo == null) {
+                log.info("【主动升级】服务器锁的升级包为空");
+            } else if(!(lockUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+                return "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + lockUpdateVersion + ",请返回重新选择升级包";
+            }
+
+            for (String lockId : lockIds) {
+                GatewayAndLock gl = gatewayAndLockService.findByLockId(lockId);
+                if (gl == null) {
+                    lock_fail_Map.put(lockId, "{code:\"fail\", msg:\"锁从未上线\"}");
+                    continue;
+                } else if (gl.getGwStatus() == 0 || gl.getLockStatus() == 0 || "".equals(gl.getLockId())) {
+                    lock_fail_Map.put(lockId, "{code:\"fail\", msg:\"锁下线\"}");
+                    continue;
+                } else {
+                    if (gwLock_success_Map.get(gl.getIp()) == null) {
+                        gwLock_success_Map.put(gl.getIp(), "{code:\"" + lockHexTypeNum + "" + Hex.encodeHexString(lockHexVersion, false) + "\", msg:\"只升级锁\", gwId:\"" + gl.getGwId() + "\", lockId:\"" + lockId + "\"}");
+                    } else {
+                        JSONObject json = JSON.parseObject(gwLock_success_Map.get(gl.getIp()));
+                        String newCode = json.getString("code") + lockHexTypeNum + Hex.encodeHexString(lockHexVersion, false);
+                        json.put("code", newCode);
+                        json.put("msg", "网关和锁同时升级");
+                        json.put("lockId", gl.getLockId());
+                        gwLock_success_Map.put(gl.getIp(), json.toString());
+                    }
+                }
+            }
+
+        }
+
+        if (gwUpdateVersion != null) {
+            upload(gwPackage, "gateway" + "/active", gwUpdateVersion);
+            log.info("网关升级包上传成功");
+        }
+
+        if (lockUpdateVersion != null) {
+            upload(lockPackage, "lock" + "/active", lockUpdateVersion);
+            log.info("锁升级包上传成功");
+        }
+        //发送升级信号
+        CmdUtil.sendActiveUpdateCmd(gwLock_success_Map);
+
+
+        FileOutputStream fileOutputStream = new FileOutputStream(excelPath + "/send_success_result.xlsx");
+        ExcelUtil.writeExcel("send_success", gwLock_success_Map, fileOutputStream);
+        FileOutputStream fileOutputStream1 = new FileOutputStream(excelPath + "/gateway_send_fail_result.xlsx");
+        ExcelUtil.writeExcel("gateway_send_fail", gw_fail_Map, fileOutputStream1);
+        FileOutputStream fileOutputStream2 = new FileOutputStream(excelPath + "/lock_send_fail_result.xlsx");
+        ExcelUtil.writeExcel("lock_send_fail", lock_fail_Map, fileOutputStream2);
+        return "升级成功";
     }
 
 

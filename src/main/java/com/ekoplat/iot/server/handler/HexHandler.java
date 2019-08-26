@@ -150,6 +150,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                         responseCmd.setCmd((short) 2);
                         updateLogRepository.save(updateLog);
                     }
+                    updateLogRepository.save(updateLog);
                     log.info("【被动升级】升级记录存储成功");
                     ctx.channel().writeAndFlush(responseCmd);
                 }
@@ -199,6 +200,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                         String useTime = Common.getUseTime(finishTime, updateLog.getStartTime());
                         updateLog.setUseTime(useTime);
                         updateLogRepository.save(updateLog);
+                        log.info("【批量升级】升级记录存储到数据库");
                         ctx.channel().writeAndFlush(responsePackage);
                         log.info("【被动升级】id:{} 最后一包发送完毕", id);
                         module = 0;
@@ -250,6 +252,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                     }
                     log.info("【批量升级】升级包选择成功");
                     updateLog.setIsSuccess(1);
+                    updateLogRepository.save(updateLog);
                     ResponseCmd responseCmd = new ResponseCmd();
                     responseCmd.setHEAD(Head.FLAG);
                     responseCmd.setModule(message.getModule());
@@ -306,6 +309,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                         updateLog.setUseTime(useTime);
                         updateLog.setFinishTime(new Date());
                         updateLogRepository.save(updateLog);
+                        log.info("【批量升级】升级记录存储到数据库");
                         module = 0;
                         //将升级结果存入缓存
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

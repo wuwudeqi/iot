@@ -41,19 +41,26 @@ public class LocationController {
         return "sdk";
     }
 
-    @GetMapping("activeUpdate2")
-    public String activeUpdate2() {
-        return  "activeUpdate2";
+    @GetMapping("activeUpdateByLocal")
+    public String activeUpdateByLocal() {
+        return "activeUpdateByLocal";
     }
 
     @GetMapping("getLastVersion")
     @ResponseBody
-    public Map<String,Object> getLastVersion() {
+
+    public Map<String, Object> getLastVersion() {
         Map<String, Object> map = new HashMap<String, Object>();
         PackageInfo lastGatewayPackage = packageRepository.findFirstBytypeNameOrderByIdDesc("gateway");
         PackageInfo lastLockPackage = packageRepository.findFirstBytypeNameOrderByIdDesc("lock");
-        map.put("lastGatewayVersion",lastGatewayPackage.getVersion());
-        map.put("lastLockVersion",lastLockPackage.getVersion());
+        if (lastGatewayPackage == null) {
+            lastGatewayPackage = new PackageInfo();
+        }
+        if( lastLockPackage == null) {
+            lastLockPackage = new PackageInfo();
+        }
+        map.put("lastGatewayVersion", lastGatewayPackage.getVersion());
+        map.put("lastLockVersion", lastLockPackage.getVersion());
         return map;
     }
 
@@ -69,7 +76,7 @@ public class LocationController {
     @PostMapping("deletePackage")
     @ResponseBody
     public Integer deletePackage(String[] fileNames) {
-        Map<String,List<String>> map = new HashMap<String,List<String>>();
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
         for (String fileName : fileNames) {
             String[] ts = fileName.split("_v");
             String[] split = ts[1].split("\\.");
@@ -77,11 +84,11 @@ public class LocationController {
             if (list == null) {
                 list = new ArrayList<String>();
             }
-            list.add(split[0] + "." +split[1]);
-            map.put(ts[0],list);
+            list.add(split[0] + "." + split[1]);
+            map.put(ts[0], list);
         }
         for (String filename : fileNames) {
-            File file = new File(filePath+filename);
+            File file = new File(filePath + filename);
             if (file.exists()) {
                 file.delete();
             }
@@ -89,8 +96,8 @@ public class LocationController {
         }
         log.info("【升级包】选择升级包服务器删除成功");
         for (String typeName : map.keySet()) {
-            for(String version : map.get(typeName)){
-                packageRepository.deleteByTypeNameAndVersion(typeName,version);
+            for (String version : map.get(typeName)) {
+                packageRepository.deleteByTypeNameAndVersion(typeName, version);
             }
         }
         log.info("【升级包】选择升级包数据库删除成功");

@@ -9,7 +9,9 @@
 <p><input id="txt_search" type="text"/> <input id="btn_search" type="button" value="id查询"/>
 <!--    <input type="button" id="del_btn" value="删除"/>-->
 
-    <input type="button" id="qa" value="升级"/>
+    <input type="button" id="updatebt" value="升级"/>
+    <input type="file" id="gwPackage" placeholder="网关升级包"/>
+    <input type="file" id="lockPackage" placeholder="锁升级包升级包"/>
 
 <table id="tab" border="1">
     <tr>
@@ -98,7 +100,7 @@
                     $("#tab td input:checkbox[name=gwId]").prop("checked", true);
                     i = 1;
                 } else {
-                    $("#tab td :checkbox").prop("checked", false);
+                    $("#tab td input:checkbox[name=gwId]").prop("checked", false);
                     i = 0;
                 }
 
@@ -113,41 +115,21 @@
                 })
             });
 
-            $("#del_btn").on("click", function () {
-                var arr = new Array();
-                $('#tab input:checkbox[name=gwId]:checked').each(function (i) {
-                    arr[i] = $(this).val();
-                });
-                var vals = arr.join(",");
-                alert(vals + " 确认删除以上包吗");
-                $.ajax({
-                    type: "post",
-                    url: "deletePackage",
-                    data: {"fileNames": vals},
-                    success: function (data) {
-                        alert("删除成功\n" + data + "条");
-                        // $("#tab tr").not(":first").remove();
-                        // selectStu();
-                        location.reload();
-                    }
-                });
-            })
-
-
+            var j = 0;
             //lock全选
             $("#selectAllLock").on("click", function () {
-                if (i == 0) {
+                if (j == 0) {
                     //把所有复选框选中
                     $("#tab td input:checkbox[name=lockId]").prop("checked", true);
-                    i = 1;
+                    j = 1;
                 } else {
                     $("#tab td input:checkbox[name=lockId]").prop("checked", false);
-                    i = 0;
+                    j = 0;
                 }
 
             });
 
-            //lock反选
+            //gw反选
             $("#ReverseSelectLock").on("click", function () {
 
                 $("#tab td input:checkbox[name=lockId]").each(function () {
@@ -156,22 +138,37 @@
                 })
             });
 
-            $("#del_btn").on("click", function () {
-                var arr = new Array();
-                $('#tab input:checkbox[name=lockId]:checked').each(function (i) {
-                    arr[i] = $(this).val();
+
+            $("#updatebt").on("click", function () {
+                var gwArr = new Array();
+                $('#tab input:checkbox[name=gwId]:checked').each(function (i) {
+                    gwArr[i] = $(this).val();
                 });
-                var vals = arr.join(",");
-                alert(vals + " 确认删除以上包吗");
+                var gwIds = gwArr.join(",");
+
+                var lockArr = new Array();
+                $('#tab input:checkbox[name=lockId]:checked').each(function (i) {
+                    lockArr[i] = $(this).val();
+                });
+                var lockIds = lockArr.join(",");
+
+                var formData = new FormData();
+                formData.append('gwIds', gwIds);
+                formData.append('lockIds', lockIds);
+                formData.append('gwPackage', $('#gwPackage')[0].files[0]);
+                formData.append('lockPackage', $('#lockPackage')[0].files[0]);
                 $.ajax({
                     type: "post",
-                    url: "deletePackage",
-                    data: {"fileNames": vals},
+                    url: "batchUpdateByHtml",
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    data: formData,
                     success: function (data) {
-                        alert("删除成功\n" + data + "条");
+                        alert(data);
                         // $("#tab tr").not(":first").remove();
                         // selectStu();
-                        location.reload();
+                        //location.reload();
                     }
                 });
             })

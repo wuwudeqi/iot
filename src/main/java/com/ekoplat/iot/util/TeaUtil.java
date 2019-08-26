@@ -349,10 +349,10 @@ public class TeaUtil {
         return  encrypt;
     }
 
-    public static void main1(String[] args) {
+    public static void main(String[] args) {
         String type0 = "{\"GW-ID\":\"00000000000033\",\"type\":0,\"BEAT\":\"send\"}";
         String str = "{\"GW-ID\":\"00000000000033\",\"type\":30,\"MNC\":0,\"LAC\":22570,\"CI\":60319,version:{\"gateway\":\"3.1\",\"lock\":\"3.1\"}} ";
-        byte[] bytes = type0.getBytes();
+        byte[] bytes = str.getBytes();
         long[] resultLong = byte2long(bytes);
         long[] encrypt = encrypt(resultLong);
         //发送的加密
@@ -373,7 +373,7 @@ public class TeaUtil {
         System.out.println(s);
     }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         byte[] bei = new byte[]{
                 0x11,0x22,0x33,0x44,0x00,0x01,0x00,0x01,0x00,0x00,0x00,0x04,0x00,0x00,0x00,0x00};
         byte[] orginal1 = new byte[]{

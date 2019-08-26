@@ -63,8 +63,8 @@ param:
 
 #/usr/local/tomcat8/upload/
 #/Users/kiyoumi/Downloads/upload/
-filePath: "/Users/kiyoumi/Downloads/upload/"
+filePath: "/usr/local/tomcat8/upload/"
 
 #/usr/local/tomcat8/excel/
 #/Users/kiyoumi/Downloads/excel/
-excelPath: "/Users/kiyoumi/Downloads/excel/"
+excelPath: "/usr/local/tomcat8/excel/"
