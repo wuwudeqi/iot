@@ -48,7 +48,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
     public String version;
     public byte[] packageBytes;
 
-    public UpdateLog updateLog = new UpdateLog();
+    public UpdateLog updateLog;
 
 
     @Value("${param.gateway.typeNum}")
@@ -78,6 +78,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                  * 校验升级的设备
                  */
                 if (message.getCmd() == 0) {
+                    updateLog = new UpdateLog();
                     log.info("【升级校验】校验设备的类型");
                     byte[] data = message.getData();
                     byte[] idBytes = new byte[14];
@@ -100,17 +101,19 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                     } else {
                         version = String.valueOf(versionHead) + "." + String.valueOf(versionTail);
                     }
+                    if (typeNum.equals("0000")) {
+                        updateLog.setTypeName("gateway");
+                    } else if (typeNum.equals("0101")) {
+                        id = gatewayAndLockRepository.findByLockId(id).getLockId();
+                        updateLog.setTypeName("lock");
+                    }
                     //组装updateLog
                     updateLog.setDeviceId(id);
                     updateLog.setStartTime(new Date());
                     updateLog.setOldVersion(version);
                     updateLog.setNewVersion(packgeInfo.getVersion());
                     updateLog.setUpdateType("passivity");
-                    if (typeNum.equals("0000")) {
-                        updateLog.setTypeName("gateway");
-                    } else if (typeNum.equals("0101")) {
-                        updateLog.setTypeName("lock");
-                    }
+
                     responseCmd.setHEAD(Head.FLAG);
                     responseCmd.setModule((short) 4097);
                     byte[] byteDemo = new byte[4];
@@ -213,6 +216,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
             } else if (message.getModule() == 2) {
                 responsePackage.setHEAD(Head.FLAG);
                 if (message.getCmd() == 3) {
+                    updateLog = new UpdateLog();
                     byte[] data = message.getData();
                     byte[] idBytes = new byte[14];
                     System.arraycopy(data, 0, idBytes, 0, 14);
@@ -223,6 +227,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                         updateLog.setOldVersion(gatewayAndLockRepository.findBygwId(id).getGwVersion());
                         updateLog.setTypeName("gateway");
                     } else if (typeNum.equals("0101")) {
+                        id = gatewayAndLockRepository.findByLockId(id).getLockId();
                         updateLog.setOldVersion(gatewayAndLockRepository.findBygwId(id).getLockVersion());
                         updateLog.setTypeName("lock");
                     }

@@ -31,8 +31,8 @@ import java.util.Map;
 /**
  * 文件上传的Controller
  *
- * @author 单红宇(CSDN CATOOP)
- * @create 2017年3月11日
+ * @author wuwudeqi
+ *
  */
 @Controller
 @Slf4j
@@ -61,12 +61,11 @@ public class FileUploadController {
 
 
     /**
-     * 文件上传具体实现方法（单文件上传）
-     *
+     * 升级包上传
      * @param file
-     * @return
-     * @author 单红宇
-     * @create 2017年3月11日
+     * @param typeName
+     * @param version
+     * @return 结果
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @ResponseBody
@@ -82,7 +81,7 @@ public class FileUploadController {
                 PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
                 if (lastPackageInfo == null) {
                     log.info("【数据包上传】服务器{}升级包为空", typeName);
-                } else if(!(version.compareTo(lastPackageInfo.getVersion()) > 0)){
+                } else if (!(version.compareTo(lastPackageInfo.getVersion()) > 0)) {
                     return "当前服务器" + typeName + "最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + version + ",请返回重新选择升级包";
                 }
                 String fileName = FileUtil.generateFileName(typeName, version);
@@ -118,6 +117,16 @@ public class FileUploadController {
     }
 
 
+    /**
+     * 批量上传通过excel
+     * @param gwIdExcel
+     * @param gwIdPackage
+     * @param lockIdExcel
+     * @param lockIdPackage
+     * @return
+     * @throws IOException
+     * @throws DecoderException
+     */
     @RequestMapping("/batchUpdate")
     @ResponseBody
     public String batchUpdate(@RequestParam("gwIdExcel") MultipartFile gwIdExcel, @RequestParam("gwIdPackage") MultipartFile gwIdPackage, @RequestParam("lockIdExcel") MultipartFile lockIdExcel, @RequestParam("lockIdPackage") MultipartFile lockIdPackage) throws IOException, DecoderException {
@@ -127,24 +136,25 @@ public class FileUploadController {
         HashMap<String, String> gwLock_success_Map = new HashMap<>();
         HashMap<String, String> gw_fail_Map = new HashMap<>();
         HashMap<String, String> lock_fail_Map = new HashMap<>();
+        String gwUpdateVersion = null;
         if (!"".equals(gwIdFileName) && gwIdFileName != null) {
             //获取网关的版本号
+            String[] split = gwIdFileName.split("_v");
+            String[] split1 = split[1].split("\\.");
             byte[] gwHexVersion = FileUtil.getVersionByFileName(gwIdFileName);
-            String updateVersion = String.valueOf((int) gwHexVersion[0]) + "." + String.valueOf((int) gwHexVersion[1]);
+            gwUpdateVersion = split1[0] + "." + split1[1];
             String typeName = FileUtil.getTypeNameByFileName(gwIdFileName);
             //或得数据库最新的版本
             PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
             //将上传的版本号和数据库版本号做比对
             if (lastPackageInfo == null) {
                 log.info("【主动升级】服务器{}升级包为空", typeName);
-            } else if (!(updateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+            } else if (!(gwUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
                 view.setViewName("error");
-                view.addObject("errorMsg", "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包");
-                return "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包";
+                view.addObject("errorMsg", "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + gwUpdateVersion + ",请返回重新选择升级包");
+                return "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + gwUpdateVersion + ",请返回重新选择升级包";
             }
 
-            upload(gwIdPackage, typeName + "/active", updateVersion);
-            log.info("升级包上传成功");
 
             List<String> gwList = ExcelUtil.readExcelFile(gwIdExcel.getInputStream(), gwIdExcelName);
             for (String gwId : gwList) {
@@ -165,25 +175,24 @@ public class FileUploadController {
 
         String LockExcelName = lockIdExcel.getOriginalFilename();
         String lockIdFileName = lockIdPackage.getOriginalFilename();
-
+        String lockUpdateVersion = null;
         if (!"".equals(lockIdFileName) && lockIdFileName != null) {
             //获取网关的版本号
+            String[] split = lockIdFileName.split("_v");
+            String[] split1 = split[1].split("\\.");
             byte[] lockHexVersion = FileUtil.getVersionByFileName(lockIdFileName);
-            String updateVersion = String.valueOf((int) lockHexVersion[0]) + "." + String.valueOf((int) lockHexVersion[1]);
+            lockUpdateVersion = split1[0] + "." + split1[1];
             String typeName = FileUtil.getTypeNameByFileName(lockIdFileName);
             //或得数据库最新的版本
             PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
             //将上传的版本号和数据库版本号做比对
             if (lastPackageInfo == null) {
                 log.info("【主动升级】服务器{}升级包为空", typeName);
-            } else if (!(updateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+            } else if (!(lockUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
                 view.setViewName("error");
-                view.addObject("errorMsg", "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包");
-                return "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + updateVersion + ",请返回重新选择升级包";
+                view.addObject("errorMsg", "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + lockUpdateVersion + ",请返回重新选择升级包");
+                return "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + lockUpdateVersion + ",请返回重新选择升级包";
             }
-
-            upload(lockIdPackage, typeName + "/active", updateVersion);
-            log.info("升级包上传成功");
 
             List<String> lockList = ExcelUtil.readExcelFile(lockIdExcel.getInputStream(), LockExcelName);
             for (String lockId : lockList) {
@@ -210,6 +219,15 @@ public class FileUploadController {
 
         }
 
+        if (gwUpdateVersion != null) {
+            upload(gwIdPackage, "gateway" + "/active", gwUpdateVersion);
+            log.info("网关升级包上传成功");
+        }
+        if (lockUpdateVersion != null) {
+            upload(lockIdPackage, "lock" + "/active", lockUpdateVersion);
+            log.info("锁升级包上传成功");
+        }
+
         CmdUtil.sendActiveUpdateCmd(gwLock_success_Map);
 
 
@@ -234,8 +252,10 @@ public class FileUploadController {
         String gwUpdateVersion = null;
         if (!"".equals(gwIdFileName) && gwIdFileName != null) {
             //获取网关的版本号
+            String[] split = gwIdFileName.split("_v");
+            String[] split1 = split[1].split("\\.");
             byte[] gwHexVersion = FileUtil.getVersionByFileName(gwIdFileName);
-            gwUpdateVersion = String.valueOf((int) gwHexVersion[0]) + "." + String.valueOf((int) gwHexVersion[1]);
+            gwUpdateVersion = split1[0] + "." + split1[1];
             String typeName = FileUtil.getTypeNameByFileName(gwIdFileName);
             //或得数据库最新的版本
             PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
@@ -267,15 +287,17 @@ public class FileUploadController {
         String lockUpdateVersion = null;
         if (!"".equals(lockIdFileName) && lockIdFileName != null) {
             //获取网关的版本号
+            String[] split = lockIdFileName.split("_v");
+            String[] split1 = split[1].split("\\.");
             byte[] lockHexVersion = FileUtil.getVersionByFileName(lockIdFileName);
-            lockUpdateVersion = String.valueOf((int) lockHexVersion[0]) + "." + String.valueOf((int) lockHexVersion[1]);
+            lockUpdateVersion = split1[0] + "." + split1[1];
             String typeName = FileUtil.getTypeNameByFileName(lockIdFileName);
             //或得数据库最新的版本
             PackageInfo lastPackageInfo = packageRepository.findFirstBytypeNameOrderByIdDesc(typeName);
             //将上传的版本号和数据库版本号做比对
             if (lastPackageInfo == null) {
                 log.info("【主动升级】服务器锁的升级包为空");
-            } else if(!(lockUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
+            } else if (!(lockUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
                 return "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + lockUpdateVersion + ",请返回重新选择升级包";
             }
 
