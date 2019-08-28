@@ -15,4 +15,6 @@ public interface GatewayAndLockRepository extends JpaRepository<GatewayAndLock, 
     GatewayAndLock findByip(String ip);
     GatewayAndLock findByLockId(String lockId);
     List<GatewayAndLock> findBygwStatus(Integer gwStatus);
+    List<GatewayAndLock> findBylockStatus(Integer lockStatus);
+    List<GatewayAndLock> gwIdBetween(String big, String little);
 }

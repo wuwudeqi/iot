@@ -6,7 +6,7 @@
 <body>
 
 <h2>主动升级</h2>
-<p><input id="txt_search" type="text"/> <input id="btn_search" type="button" value="id查询"/>
+<p><input id="txt_search" type="text"/> <input id="btn_search" type="button" value="查询"/>
 <!--    <input type="button" id="del_btn" value="删除"/>-->
 
     <input type="button" id="updatebt" value="升级"/>
@@ -69,7 +69,7 @@
                 $.ajax({
                     type: "get",
                     url:"getDeviceById",
-                    data: {"id": text},
+                    data: {"str": text},
                     success: function (data) {
                         $.each(data, function (index, obj) {
                             $("#tab").append(

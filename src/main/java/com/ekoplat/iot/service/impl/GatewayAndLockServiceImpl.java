@@ -36,9 +36,9 @@ public class GatewayAndLockServiceImpl implements GatewayAndLockService {
         } else {
             GatewayAndLock gwLock = gatewayAndLockRepository.findBygwId(gwId);
             if (gwLock == null) {
-                    gwLock = new GatewayAndLock();
+                gwLock = new GatewayAndLock();
             }
-            if(gwLock.getLockId()==null||"".equals(gwLock.getLockId())) {
+            if (gwLock.getLockId() == null || "".equals(gwLock.getLockId())) {
                 gwLock.setGwStatus(0);
             } else {
                 gwLock.setLockStatus(1);
@@ -89,7 +89,7 @@ public class GatewayAndLockServiceImpl implements GatewayAndLockService {
         List<GatewayAndLock> allList = gatewayAndLockRepository.findBygwStatus(1);
         for (GatewayAndLock gl : allList) {
             gl.setGwStatus(0);
-            if(!"".equals(gl.getLockId())) {
+            if (!"".equals(gl.getLockId())) {
                 gl.setLockStatus(0);
             }
         }
@@ -98,7 +98,22 @@ public class GatewayAndLockServiceImpl implements GatewayAndLockService {
 
     @Override
     public List<GatewayAndLock> findAll() {
-        return  gatewayAndLockRepository.findAll();
+        return gatewayAndLockRepository.findAll();
+    }
+
+    @Override
+    public List<GatewayAndLock> findBylockStatus(Integer lockStatus) {
+        return gatewayAndLockRepository.findBylockStatus(lockStatus);
+    }
+
+    @Override
+    public List<GatewayAndLock> findBygwStatus(Integer gwStatus) {
+        return gatewayAndLockRepository.findBygwStatus(gwStatus);
+    }
+
+    @Override
+    public List<GatewayAndLock> gwIdBetween(String big, String little) {
+        return gatewayAndLockRepository.gwIdBetween(big, little);
     }
 
 }

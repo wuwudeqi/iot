@@ -18,4 +18,7 @@ public interface GatewayAndLockService {
     GatewayAndLock findBygwId(String gwId);
     void changeAllGwStatus();
     List<GatewayAndLock> findAll();
+    List<GatewayAndLock> findBylockStatus(Integer lockStatus);
+    List<GatewayAndLock> findBygwStatus(Integer gwStatus);
+    List<GatewayAndLock> gwIdBetween(String big, String little);
 }

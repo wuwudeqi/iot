@@ -92,15 +92,14 @@ public class LocationController {
             if (file.exists()) {
                 file.delete();
             }
-
+            log.info("【升级包】选择{}升级包服务器删除成功",filename);
         }
-        log.info("【升级包】选择升级包服务器删除成功");
         for (String typeName : map.keySet()) {
             for (String version : map.get(typeName)) {
                 packageRepository.deleteByTypeNameAndVersion(typeName, version);
+                log.info("【升级包】选择{},{}升级包数据库删除成功",typeName,version);
             }
         }
-        log.info("【升级包】选择升级包数据库删除成功");
         return fileNames.length;
     }
 

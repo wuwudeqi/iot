@@ -227,12 +227,12 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                         updateLog.setOldVersion(gatewayAndLockRepository.findBygwId(id).getGwVersion());
                         updateLog.setTypeName("gateway");
                     } else if (typeNum.equals("0101")) {
-                        id = gatewayAndLockRepository.findByLockId(id).getLockId();
                         updateLog.setOldVersion(gatewayAndLockRepository.findBygwId(id).getLockVersion());
+                        id = gatewayAndLockRepository.findBygwId(id).getLockId();
                         updateLog.setTypeName("lock");
                     }
-                    updateLog.setUpdateType("active");
                     updateLog.setDeviceId(id);
+                    updateLog.setUpdateType("active");
                     updateLog.setStartTime(new Date());
                     int versionHead = data[16];
                     Integer versionTail = Integer.valueOf(data[17]);
