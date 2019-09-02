@@ -103,7 +103,6 @@ public class RequestDecoder extends ByteToMessageDecoder {
                 //吃掉包头
                 buffer.readInt();
 
-
                 //模块号
                 short module = buffer.readShort();
                 //命令号

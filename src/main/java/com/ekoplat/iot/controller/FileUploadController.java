@@ -239,7 +239,7 @@ public class FileUploadController {
         HashMap<String, String> gw_fail_Map = new HashMap<>();
         HashMap<String, String> lock_fail_Map = new HashMap<>();
 
-        if(gwPackage == null && lockPackage == null) {
+        if (gwPackage == null && lockPackage == null) {
             return "请导入一个升级包";
         }
 
@@ -321,7 +321,7 @@ public class FileUploadController {
 
         String gwLog = "";
         if (gwUpdateVersion != null) {
-           gwLog = upload(gwPackage, "gateway" + "/active", gwUpdateVersion);
+            gwLog = upload(gwPackage, "gateway" + "/active", gwUpdateVersion);
             log.info("网关升级包上传成功");
         }
         String lockLog = "";
@@ -332,7 +332,7 @@ public class FileUploadController {
         //发送升级信号
         CmdUtil.sendActiveUpdateCmd(gwLock_success_Map);
 
-        return gwLog+"\n"+lockLog;
+        return gwLog + "\n" + lockLog;
     }
 
 
