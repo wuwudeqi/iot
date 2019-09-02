@@ -151,12 +151,19 @@
                     lockArr[i] = $(this).val();
                 });
                 var lockIds = lockArr.join(",");
-
+                var gwPackage = $('#gwPackage')[0].files[0];
+                var lockPackage = $('#lockPackage')[0].files[0];
+                // if(gwPackage == null) {
+                //     gwPackage = lockPackage;
+                // }
+                // if(lockPackage == null) {
+                //     lockPackage = gwPackage;
+                // }
                 var formData = new FormData();
                 formData.append('gwIds', gwIds);
                 formData.append('lockIds', lockIds);
-                formData.append('gwPackage', $('#gwPackage')[0].files[0]);
-                formData.append('lockPackage', $('#lockPackage')[0].files[0]);
+                formData.append('gwPackage', gwPackage);
+                formData.append('lockPackage', lockPackage);
                 $.ajax({
                     type: "post",
                     url: "batchUpdateByHtml",

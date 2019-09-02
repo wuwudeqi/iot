@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -32,7 +32,6 @@ import java.util.Map;
  * 文件上传的Controller
  *
  * @author wuwudeqi
- *
  */
 @Controller
 @Slf4j
@@ -62,6 +61,7 @@ public class FileUploadController {
 
     /**
      * 升级包上传
+     *
      * @param file
      * @param typeName
      * @param version
@@ -119,6 +119,7 @@ public class FileUploadController {
 
     /**
      * 批量上传通过excel
+     *
      * @param gwIdExcel
      * @param gwIdPackage
      * @param lockIdExcel
@@ -130,7 +131,6 @@ public class FileUploadController {
     @RequestMapping("/batchUpdate")
     @ResponseBody
     public String batchUpdate(@RequestParam("gwIdExcel") MultipartFile gwIdExcel, @RequestParam("gwIdPackage") MultipartFile gwIdPackage, @RequestParam("lockIdExcel") MultipartFile lockIdExcel, @RequestParam("lockIdPackage") MultipartFile lockIdPackage) throws IOException, DecoderException {
-        ModelAndView view = new ModelAndView();
         String gwIdExcelName = gwIdExcel.getOriginalFilename();
         String gwIdFileName = gwIdPackage.getOriginalFilename();
         HashMap<String, String> gwLock_success_Map = new HashMap<>();
@@ -150,8 +150,6 @@ public class FileUploadController {
             if (lastPackageInfo == null) {
                 log.info("【主动升级】服务器{}升级包为空", typeName);
             } else if (!(gwUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
-                view.setViewName("error");
-                view.addObject("errorMsg", "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + gwUpdateVersion + ",请返回重新选择升级包");
                 return "当前服务器网关最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + gwUpdateVersion + ",请返回重新选择升级包";
             }
 
@@ -189,8 +187,6 @@ public class FileUploadController {
             if (lastPackageInfo == null) {
                 log.info("【主动升级】服务器{}升级包为空", typeName);
             } else if (!(lockUpdateVersion.compareTo(lastPackageInfo.getVersion()) > 0)) {
-                view.setViewName("error");
-                view.addObject("errorMsg", "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + lockUpdateVersion + ",请返回重新选择升级包");
                 return "当前服务器锁的最新版本为" + lastPackageInfo.getVersion() + ",填入的版本为" + lockUpdateVersion + ",请返回重新选择升级包";
             }
 
@@ -231,26 +227,25 @@ public class FileUploadController {
         CmdUtil.sendActiveUpdateCmd(gwLock_success_Map);
 
 
-        view.setViewName("excelResult");
-        FileOutputStream fileOutputStream = new FileOutputStream(excelPath + "/send_success_result.xlsx");
-        ExcelUtil.writeExcel("send_success", gwLock_success_Map, fileOutputStream);
-        FileOutputStream fileOutputStream1 = new FileOutputStream(excelPath + "/gateway_send_fail_result.xlsx");
-        ExcelUtil.writeExcel("gateway_send_fail", gw_fail_Map, fileOutputStream1);
-        FileOutputStream fileOutputStream2 = new FileOutputStream(excelPath + "/lock_send_fail_result.xlsx");
-        ExcelUtil.writeExcel("lock_send_fail", lock_fail_Map, fileOutputStream2);
         return "升级成功";
     }
 
 
     @RequestMapping("/batchUpdateByHtml")
     @ResponseBody
-    public String batchUpdateByHtml(@RequestParam("gwIds") String[] gwIds, @RequestParam("gwPackage") MultipartFile gwPackage, @RequestParam("lockIds") String[] lockIds, @RequestParam("lockPackage") MultipartFile lockPackage) throws IOException, DecoderException {
-        String gwIdFileName = gwPackage.getOriginalFilename();
+    public String batchUpdateByHtml(@RequestParam("gwIds") String[] gwIds, @RequestParam("gwPackage") @Nullable MultipartFile gwPackage, @RequestParam("lockIds") String[] lockIds, @RequestParam("lockPackage") @Nullable MultipartFile lockPackage) throws IOException, DecoderException {
+
         HashMap<String, String> gwLock_success_Map = new HashMap<>();
         HashMap<String, String> gw_fail_Map = new HashMap<>();
         HashMap<String, String> lock_fail_Map = new HashMap<>();
+
+        if(gwPackage == null && lockPackage == null) {
+            return "请导入一个升级包";
+        }
+
         String gwUpdateVersion = null;
-        if (!"".equals(gwIdFileName) && gwIdFileName != null) {
+        if (gwPackage != null) {
+            String gwIdFileName = gwPackage.getOriginalFilename();
             //获取网关的版本号
             String[] split = gwIdFileName.split("_v");
             String[] split1 = split[1].split("\\.");
@@ -282,11 +277,10 @@ public class FileUploadController {
         }
 
 
-        String lockIdFileName = lockPackage.getOriginalFilename();
-
         String lockUpdateVersion = null;
-        if (!"".equals(lockIdFileName) && lockIdFileName != null) {
+        if (lockPackage != null) {
             //获取网关的版本号
+            String lockIdFileName = lockPackage.getOriginalFilename();
             String[] split = lockIdFileName.split("_v");
             String[] split1 = split[1].split("\\.");
             byte[] lockHexVersion = FileUtil.getVersionByFileName(lockIdFileName);
@@ -325,26 +319,20 @@ public class FileUploadController {
 
         }
 
+        String gwLog = "";
         if (gwUpdateVersion != null) {
-            upload(gwPackage, "gateway" + "/active", gwUpdateVersion);
+           gwLog = upload(gwPackage, "gateway" + "/active", gwUpdateVersion);
             log.info("网关升级包上传成功");
         }
-
+        String lockLog = "";
         if (lockUpdateVersion != null) {
-            upload(lockPackage, "lock" + "/active", lockUpdateVersion);
+            lockLog = upload(lockPackage, "lock" + "/active", lockUpdateVersion);
             log.info("锁升级包上传成功");
         }
         //发送升级信号
         CmdUtil.sendActiveUpdateCmd(gwLock_success_Map);
 
-
-        FileOutputStream fileOutputStream = new FileOutputStream(excelPath + "/send_success_result.xlsx");
-        ExcelUtil.writeExcel("send_success", gwLock_success_Map, fileOutputStream);
-        FileOutputStream fileOutputStream1 = new FileOutputStream(excelPath + "/gateway_send_fail_result.xlsx");
-        ExcelUtil.writeExcel("gateway_send_fail", gw_fail_Map, fileOutputStream1);
-        FileOutputStream fileOutputStream2 = new FileOutputStream(excelPath + "/lock_send_fail_result.xlsx");
-        ExcelUtil.writeExcel("lock_send_fail", lock_fail_Map, fileOutputStream2);
-        return "升级成功";
+        return gwLog+"\n"+lockLog;
     }
 
 

@@ -20,14 +20,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Slf4j
@@ -104,7 +100,8 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                     if (typeNum.equals("0000")) {
                         updateLog.setTypeName("gateway");
                     } else if (typeNum.equals("0101")) {
-                        id = gatewayAndLockRepository.findByLockId(id).getLockId();
+                        updateLog.setOldVersion(gatewayAndLockRepository.findBygwId(id).getLockVersion());
+                        id = gatewayAndLockRepository.findBygwId(id).getLockId();
                         updateLog.setTypeName("lock");
                     }
                     //组装updateLog
@@ -243,7 +240,7 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                     }
                     updateLog.setNewVersion(version);
                     log.info("【升级的内容】id={}, typeNum={}, version={}", id, typeNum, version);
-                    PackageInfo packgeInfo = packageRepository.findFirstBytypeNumOrderByIdDesc(typeNum);
+                    PackageInfo packgeInfo = packageRepository.findByTypeNumAndVersion(typeNum,version);
                     FileUploadController fileUploadController = SpringUtil.getBean(FileUploadController.class);
                     String filePath = fileUploadController.filePath + packgeInfo.getTypeName() + "_v" + packgeInfo.getVersion() + ".bin";
                     try {
@@ -316,29 +313,6 @@ public class HexHandler extends ChannelInboundHandlerAdapter {
                         updateLogRepository.save(updateLog);
                         log.info("【批量升级】升级记录存储到数据库");
                         module = 0;
-                        //将升级结果存入缓存
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        FileUploadController fileController = SpringUtil.getBean(FileUploadController.class);
-                        RedisTemplate redisTemplate = fileController.redisTemplate;
-                        ValueOperations ops = redisTemplate.opsForValue();
-                        if (typeNum.equals(gwHexTypeNum)) {
-                            Map<String, String> gateway_success_map = (HashMap<String, String>) ops.get("gateway_success_map");
-                            if (gateway_success_map == null) {
-                                gateway_success_map = new HashMap<String, String>();
-                            }
-                            gateway_success_map.put(id, sdf.format(new Date()));
-                            ops.set("gateway_success_map", gateway_success_map);
-                            log.info("【网关升级成功】id={}", id);
-                        }
-                        if (typeNum.equals(lockHexTypeNum)) {
-                            Map<String, String> lock_success_map = (HashMap<String, String>) ops.get("lock_success_map");
-                            if (lock_success_map == null) {
-                                lock_success_map = new HashMap<String, String>();
-                            }
-                            lock_success_map.put(id, sdf.format(new Date()));
-                            ops.set("lock_success_map", lock_success_map);
-                            log.info("【锁升级成功】id={}", id);
-                        }
                     }
                     /**
                      * 硬件得到错误的包的返回处理

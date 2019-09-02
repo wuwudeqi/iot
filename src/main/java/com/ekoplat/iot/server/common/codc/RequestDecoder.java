@@ -35,7 +35,7 @@ public class RequestDecoder extends ByteToMessageDecoder {
             //buffer.readerIndex(beginReader);
             //吸收 01 00
             short length = buffer.readShort();
-            if (length == 256){
+            if (length == 256) {
                 byte[] b = new byte[buffer.readableBytes()];
                 //复制内容到字节数组b
                 buffer.readBytes(b);
@@ -82,7 +82,7 @@ public class RequestDecoder extends ByteToMessageDecoder {
                     requestCmd.setData(data);
                     out.add(requestCmd);
                 }
-            }else if (length == 29) {
+            } else if (length == 29) {
                 byte[] b = new byte[buffer.readableBytes()];
                 //复制内容到字节数组b
                 buffer.readBytes(b);
@@ -90,42 +90,41 @@ public class RequestDecoder extends ByteToMessageDecoder {
                 //临时
                 out.add(s);
             }
+        } else {
+            buffer.readerIndex(beginReader);
+
+            //可读长度必须大于基本长度
+            if (buffer.readableBytes() >= BASE_LENTH) {
+                //防止socket字节流攻击
+                if (buffer.readableBytes() > 2048) {
+                    buffer.skipBytes(buffer.readableBytes());
+                }
+
+                //吃掉包头
+                buffer.readInt();
+
+
+                //模块号
+                short module = buffer.readShort();
+                //命令号
+                short cmd = buffer.readShort();
+                //长度
+                int length = buffer.readInt();
+
+
+                //读取data数据
+                byte[] data = new byte[length];
+                buffer.readBytes(data);
+                RequestCmd requestCmd = new RequestCmd();
+                requestCmd.setModule(module);
+                requestCmd.setCmd(cmd);
+                requestCmd.setData(data);
+
+                //继续往下传递
+                out.add(requestCmd);
+
+            }
         }
-//        else {
-//            buffer.readerIndex(beginReader);
-//
-//            //可读长度必须大于基本长度
-//            if (buffer.readableBytes() >= BASE_LENTH) {
-//                //防止socket字节流攻击
-//                if (buffer.readableBytes() > 2048) {
-//                    buffer.skipBytes(buffer.readableBytes());
-//                }
-//
-//                //吃掉包头
-//                buffer.readInt();
-//
-//
-//                //模块号
-//                short module = buffer.readShort();
-//                //命令号
-//                short cmd = buffer.readShort();
-//                //长度
-//                int length = buffer.readInt();
-//
-//
-//                //读取data数据
-//                byte[] data = new byte[length];
-//                buffer.readBytes(data);
-//                RequestCmd requestCmd = new RequestCmd();
-//                requestCmd.setModule(module);
-//                requestCmd.setCmd(cmd);
-//                requestCmd.setData(data);
-//
-//                //继续往下传递
-//                out.add(requestCmd);
-//
-//            }
-//        }
 
     }
 }
